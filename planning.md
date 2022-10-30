@@ -1,6 +1,6 @@
 # Ideally this happens 🎃
-Srs Bot gets: "Fuck light mode all my homies hate light mode delete this already"
-LMD (Light Mode Defender) goes: This is anti-light mode propaganda (88% accuracy)
+Srs Bot gets: "Fuck light mode all my homies hate light mode delete this already" <br>
+LMD (Light Mode Defender) goes: This is anti-light mode propaganda (88% accuracy) <br>
 Srs Bot sends: "😤😤😤 shut this light's brighter than your future 😤😤😤"
 
 # Overall Plan
@@ -17,7 +17,7 @@ Srs Bot sends: "😤😤😤 shut this light's brighter than your future 😤�
 # 1) Tag POS
 ## Hidden Markov Models
 ## smh justin data doesn't appear out of thin air
-I know we steal copypasta from Reddit
+I know we steal copypasta from Reddit <br>
 Also we do a bit of trolling with the NYT
 ## Getting more data
 Run [file name goes here] and it'll generate a POS output file. Then clean it and throw it in [Training Data/POSData.txt]
