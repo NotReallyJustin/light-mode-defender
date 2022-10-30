@@ -1,7 +1,7 @@
 # Ideally this happens 🎃
-Srs Bot gets: "Fuck light mode all my homies hate light mode delete this already" <br>
-LMD (Light Mode Defender) goes: This is anti-light mode propaganda (88% accuracy) <br>
-Srs Bot sends: "😤😤😤 shut this light's brighter than your future 😤😤😤"
+**Srs Bot gets:** "Fuck light mode all my homies hate light mode delete this already" <br>
+**LMD (Light Mode Defender) goes:** This is anti-light mode propaganda (88% accuracy) <br>
+**Srs Bot sends:** "😤😤😤 shut this light's brighter than your future 😤😤😤"
 
 # Overall Plan
 1. Tag POS
@@ -35,5 +35,7 @@ Run [file name goes here] and it'll generate a POS output file. Then clean it an
 # 7) Return score
 
 # 8) ???
+## Write tests for everything
+I'll get to that probably in 2077
 
 # 9) Religious Victory
