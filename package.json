@@ -1,0 +1,19 @@
+{
+  "name": "light-mode-defender",
+  "version": "1.0.0",
+  "description": "Srs Bot's Light Mode Arsenal, but we moved it here so nothing ends up crashing",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ComradeDiamond/light-mode-defender.git"
+  },
+  "author": "Justin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ComradeDiamond/light-mode-defender/issues"
+  },
+  "homepage": "https://github.com/ComradeDiamond/light-mode-defender#readme"
+}
