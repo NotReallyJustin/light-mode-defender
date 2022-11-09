@@ -14,8 +14,14 @@
 8. ???
 9. Discord HQ bows down before the cult, goes to church, and removes dark mode from the app
 
-# 1) Tag POS
+# 1) Tag POS (POS.js)
 ## Hidden Markov Models
+Hidden == Has hidden states; Markov Model == Probability of the next item depends on previous item<br>
+Find the probability of a word being a certain POS (transmission probability) * probability of POS following another POS (emission probability) <br><br>
+
+To find the total probability, multiply all the probabilities up and then find the maximum probability of them all<br><br>
+
+Use it or lose it momento but we can prolly DP this
 ## smh justin data doesn't appear out of thin air
 I know we steal copypasta from Reddit <br>
 Also we do a bit of trolling with the NYT
