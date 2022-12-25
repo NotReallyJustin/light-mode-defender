@@ -104,5 +104,3 @@ module.exports.fixSpaces = (sentence) => {
     toRet += track; //Any straggling last items goes into toRet
     return toRet.trim();
 }
-
-console.log(this.fixSpaces("  I  fetched  my    cute, smiling,happy dog!"));

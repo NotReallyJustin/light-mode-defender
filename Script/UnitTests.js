@@ -4,4 +4,16 @@
 */
 const Helper = require("./Helper");
 
-module.exports.testFixSpaces = () => Helper.fixSpaces("  I  fetched  my    cute, smiling,happy dog!") == "I fetched my cute , smiling , happy dog !";
+/**
+ * Tests Helper.fixSpaces. There's only 1 but all the possible errors are thrown into this test case
+ * @returns Whether test is successful
+ */
+const testFixSpaces = () => Helper.fixSpaces("  I  fetched  my    cute, smiling,happy dog!") == "I fetched my cute , smiling , happy dog !";
+
+/**
+ * Runs all the unit tests and prints results
+ * @returns Whether all tests are successful
+ */
+module.exports.runTests = () => {
+
+}
