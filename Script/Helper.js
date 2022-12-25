@@ -26,7 +26,7 @@ module.exports.CountingTable = class {
 
     /**
      * @param {String} probType Case sensititve. The item you're finding the probability of 
-     * @returns 0 if the counting table is empty, or the probability of a probType existing admist the total entries
+     * @returns 0 if the counting table is empty, or the probability of a probType existing amidst the total entries
      */
     calcProb(probType)
     {
@@ -61,3 +61,48 @@ module.exports.AutoMap = class extends Map
 		return super.get(item);
 	}
 }
+
+module.exports.cleanseContractions = (sentence) => {
+
+}
+
+const puncts = `[,.!?:"';<>/=-]`;
+/**
+ * Ensures spaces between words are done properly (so apple[space][space] doesn't occur)
+ * Also ensures punctuations have 1 space padding (so [space],[space]) 
+ * @param {String} sentence Sentence to properly space
+ */
+module.exports.fixSpaces = (sentence) => {
+    var toRet = "";
+    var track = "";
+
+    for (var i = 0; i < sentence.length; i++)
+    {
+        if (toRet.length && toRet[toRet.length - 1] == " " && track == "" && sentence[i] == " ") //Prevent double (triple.. etc) space
+        {
+            continue;
+        }
+        else if (sentence[i] == " ")
+        {
+            toRet += track + " ";
+            track = "";
+        }
+        else if (puncts.indexOf(sentence[i]) != -1) //If it's a punctuation
+        {
+            toRet += track;
+            //If there's already a leading space, don't add a leading space in the punctuation
+            //Trailing spaces after a punctuation will be dealt with by "prevent double space" case
+            toRet += toRet[toRet.length - 1] == " " ? `${sentence[i]} ` : ` ${sentence[i]} `;
+            track = "";
+        }
+        else
+        {
+            track += sentence[i];
+        }
+    }
+
+    toRet += track; //Any straggling last items goes into toRet
+    return toRet.trim();
+}
+
+console.log(this.fixSpaces("  I  fetched  my    cute, smiling,happy dog!"));
