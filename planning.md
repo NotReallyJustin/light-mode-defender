@@ -21,7 +21,30 @@ Find the probability of a word being a certain POS (transmission probability) * 
 
 To find the total probability, multiply all the probabilities up and then find the maximum probability of them all<br><br>
 
-Use it or lose it momento but we can prolly DP this
+**Psuedocode Recursive method of finding the probability** <br>
+```
+1. Create memoization map
+2. Create function findMaxProbability(currentState, trackingArray) where currentState is the current POS state you're using
+3. For all previous states that connect to the current state, findMaxProbability() of those states. If it's already memoized, fetch it
+4. Get the transmission * emission probability that those previous states will connect to the current state
+5. The maximum probability you got from step 4 is the maximum probability that the sentence's POS lands on the current state
+6. Memoize that probability somewhere
+7. Return the max
+8. End function findMaxProbability
+9. Run findMaxProbability() on the end node/state
+```
+**Viterbi's Algorithm apparently exists**
+If you don't want to blow up the call stack (because it's going to be a lot of recursion), use Viterbi's algorithm prolly <br>
+```
+1. Start from the first word/state. Find the transmission * (emission probability with respect to the start node/state) for all states of that word.
+2. Go onto the next word. Find the transmission * (emission probability with respect to all the states of the last word) * (probability of the last node --> AKA probability that all the previous words are in the POS order that they are) for all states of the current word
+3. For each state, take the maximum probability you got from step 2.
+4. Get rid of the states in the previous word because that just clogs up memory and you're done using it
+5. Repeat steps 2-4 until you get to the end
+6. Take the state (or rather, the chain of states) with the maximum probability you get at the end
+```
+It kinda works like the recursion method but you're starting from the ground up
+
 ## smh justin data doesn't appear out of thin air
 I know we steal copypasta from Reddit <br>
 Also we do a bit of trolling with the NYT

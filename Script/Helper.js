@@ -104,3 +104,25 @@ module.exports.fixSpaces = (sentence) => {
     toRet += track; //Any straggling last items goes into toRet
     return toRet.trim();
 }
+
+const contractPatterns = {
+    "won't": "will not",
+    "can't": "can not",
+    "ain't": "am not",
+    "n't": " not",
+    "'s": "",       //Need a better way of dealing with 's to be honest because it could mean two things
+    "'re": " are",
+    "'d": " would",
+    "'ll": " will",
+    "'ve": " have",
+    "'m": " am"
+};
+
+module.exports.cleanseContractions = (sentence) => {
+	for (var pattern of Object.keys(contractPatterns))
+	{
+		sentence = sentence.replace(new RegExp(pattern, 'gmi'), contractPatterns[pattern]);
+	}
+
+	return sentence;
+}

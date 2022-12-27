@@ -3,32 +3,29 @@ const path = require('path');
 const readline = require('readline');
 const Helper = require("./Helper");
 
-// ⭐ Initialize Data tables
-
-/**
- * This takes into account the probability of a word being a certain POS
- * this[word] = {# times this appeared as a noun, # times this appeared as a verb...}
- */
-const probWordPOS = new Helper.AutoMap(Helper.CountingTable);
-
-/**
- * This takes into account the probability of a POS coming after a POS
- * this[posName] = {# times this comes after a noun, # times this comes after a verb, # times this comes after an adjective, etc}
- * START == This POS comes when the sentence is starting
- */
-const emissionPOS = new Helper.AutoMap(Helper.CountingTable);
-
-/**
- * Tells whether or not POSData.txt is read or not
- */
-let POSRead = false;
-
 // ⭐ Whenever script is initiated, read the training data file
-const readPOSData = new Promise(function (resolve, reject) {
+
+/**
+ * Reads POSData.txt and jots down the data.
+ * @return the transmission and emission probabilities in an array. See below for that they do
+ */
+const readPOSData = () => new Promise(function (resolve, reject) {
+
+	/**
+	 * This takes into account the probability of a word being a certain POS
+	 * this[word] = {# times this appeared as a noun, # times this appeared as a verb...}
+	 */
+	const probWordPOS = new Helper.AutoMap(Helper.CountingTable);
+
+	/**
+	 * This takes into account the probability of a POS coming after a POS
+	 * this[posName] = {# times this comes after a noun, # times this comes after a verb, # times this comes after an adjective, etc}
+	 * START == This POS comes when the sentence is starting
+	 */
+	const emissionPOS = new Helper.AutoMap(Helper.CountingTable);
+
 	let leScan = readline.createInterface({
 		input: fs.createReadStream(path.resolve(__dirname,'../Training Data/PosData.txt')),
-		output: process.stdout,
-		clrfDelay: Infinity,
 		terminal: false
 	});
 	
@@ -48,13 +45,113 @@ const readPOSData = new Promise(function (resolve, reject) {
 	});
 
 	leScan.on("close", () => {
-		POSRead = true;
+		//POSRead = true;
 		leScan.removeAllListeners();
-		resolve();
+		resolve([probWordPOS, emissionPOS]);
 	})
 });
-
-readPOSData();
+module.exports.readPOSData = readPOSData;
 
 // ⭐ Calculate the probability
-module.exports.calcPOS
+
+//Use these as a temporary substitute against new words
+const standardKeys = {
+	NOUN: null,
+	VERB: null,
+	PNOUN: null,
+	ADJECTIVE: null,
+	ADVERB: null,
+	DETERMINER: null,
+	AUX: null, 
+	PNOUN: null,
+	NUMBER: null,
+	ADPOSITION: null,
+	SCONJ: null,
+	CONJUNCTION: null,
+	IS: null,
+	COMPARISON: null,
+	PUNCTUATION: null,
+	PUNCTUATIONEND: null
+};
+
+/**
+ * Given an emission and transmission probability table, calculate the POS of every word in the sentence
+ * @param {Helper.AutoMap} probWordPOS Automap that contains all transmission probabilities of a word being a certain POS in a `Helper.CountingTable`
+ * @param {Helper.AutoMap} emissionPOS Automap that contains all emission probabilities of a word being a certain POS in a `Helper.CountingTable`
+ * @return An array, in [ [word, POS], [word, POS] ] format
+ */
+module.exports.calcPOS = (probWordPOS, emissionPOS, sentence) => {
+	let txt = Helper.fixSpaces(sentence);
+	txt = Helper.cleanseContractions(txt);
+
+	//Set of the states off all words. The first entry here is states for <START>. Which is just 100% chance it's a "SPACE"
+	let allStates = [
+		[{probs: 1, record: [], pos: "SPACE"}]
+	]; 
+
+	//Each "word" is a set of state charts - so VTB this. i == state #, starting from 0
+	txt.split(" ").forEach((word, i) => {
+		var currentStates = [];
+
+		//If done properly, this should equal smth like {total: 5; noun: 3; verb: 2}
+		//We don't need to worry about nodes that have a value of 0 in them as they're non-existant in the CountingTable class
+		var wordPOSCountingTable = probWordPOS.get(word);
+
+		//If word undefined, just assume it doesn't matter later down the line and give it a value of 1 to not mess with calculation
+		if (mapPos.total == 0) mapPos = standardKeys;
+
+		//For each node in the current state (the word)
+		//The key here should now be NOUN, PRONOUN, etc.
+		Object.keys(wordPOSCountingTable).forEach(node => {
+			//If there is no entry in the counting table on the word, the transmissionProb that it's a NOUN, PRONOUN, etc. should all be set to 1 to not mess with anything.
+			var transmissionProb = mapPos.total == 0 ? 1 : wordPOSCountingTable.calcProb(node);
+
+			//If key is total and prob is 0, skip it. Else, do README.md's viterbi's alg apparently exists step 2
+			if (key != "total" && prob != 0) 
+			{
+				var maxProb = 0;
+				var record = []; //Record tracks the POS of the current word and previous words in the chain
+				allStates[i - 1].forEach(nodeInLastState => {
+					var probabilityCurrentNode = nodeInLastState.probs * transmissionProb * emissionPOS.get(node).calcProb(nodeInLastState.pos);
+
+					if (probabilityCurrentNode > maxProb)
+					{
+						maxProb = probabilityCurrentNode;
+						record = nodeInLastState.record.push(node);
+					}
+				});
+
+				currentStates.push({probs: maxProb, record: record, pos: node}); //Construct a node graph with this node's POS
+			}
+		});
+
+		allStates.push(currentStates);
+		allStates[i - 1] = null; //We don't need the last word's states anymore as we're done using them
+	});
+
+	//We now finished finding all the state probabilities of the last word. Find the most probable state (node with max prob) and get their record.
+	let maxProbNode;
+	allStates[allStates.length - 1].forEach(node => {
+		if (!maxProbNode || node.probs > maxProbNode.probs)
+		{
+			maxProbNode = node;
+		}
+	});
+
+	//The node with max prob has a record attribute that holds all NOUN, VERB, etc. Now match it to all the words.
+	let toRet = txt.split(" ").map((word, i) => [word, maxProbNode.record[i]]);
+	return toRet;
+}
+
+/**
+ * Uses POSData.txt to calculate POS instead.
+ * When you require this, make sure to use `const { calculate } = await require("./POS");`
+ */
+module.exports.calculate = (async () => {
+	const [probWordPOS, emissionPOS] = await this.readPOSData();
+	return this.calcPOS.bind(null, probWordPOS, emissionPOS);
+})();
+
+(async () => {
+	(await this.calculate)()
+})();
