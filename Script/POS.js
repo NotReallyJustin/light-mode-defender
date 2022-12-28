@@ -39,8 +39,10 @@ const readPOSData = () => new Promise(function (resolve, reject) {
 		else
 		{
 			//Record probWordPOS and emissionPOS
-			probWordPOS.get(line.substring(0, line.indexOf("\t"))).addProb(line.substring(line.indexOf("\t") + 1));
-			emissionPOS.get(line.substring(line.indexOf("\t") + 1)).addProb(lastPOS);
+			probWordPOS.get(line.substring(0, line.indexOf("\t")).toUpperCase()).addProb(line.substring(line.indexOf("\t") + 1));
+			emissionPOS.get(line.substring(line.indexOf("\t") + 1).toUpperCase()).addProb(lastPOS);
+
+			lastPOS = line.substring(line.indexOf("\t") + 1).toUpperCase();
 		}
 	});
 
@@ -78,9 +80,10 @@ const standardKeys = {
  * Given an emission and transmission probability table, calculate the POS of every word in the sentence
  * @param {Helper.AutoMap} probWordPOS Automap that contains all transmission probabilities of a word being a certain POS in a `Helper.CountingTable`
  * @param {Helper.AutoMap} emissionPOS Automap that contains all emission probabilities of a word being a certain POS in a `Helper.CountingTable`
- * @return An array, in [ [word, POS], [word, POS] ] format
+ * @param {Boolean} showProbability Set to false, whether to return the probability of the current sentence being HMM'd on. Usually used for testing
+ * @return An array, in [ [word, POS], [word, POS] ] format. If showProbability is true, this returns it in {prob: <float for probability>, pos: [ [word, POS], [word, POS] ]}
  */
-module.exports.calcPOS = (probWordPOS, emissionPOS, sentence) => {
+module.exports.calcPOS = (probWordPOS, emissionPOS, sentence, showProbability=false) => {
 	let txt = Helper.fixSpaces(sentence);
 	txt = Helper.cleanseContractions(txt);
 
@@ -91,6 +94,7 @@ module.exports.calcPOS = (probWordPOS, emissionPOS, sentence) => {
 
 	//Each "word" is a set of state charts - so VTB this. i == state #, starting from 0
 	txt.split(" ").forEach((word, i) => {
+		word = word.toUpperCase();
 		var currentStates = [];
 
 		//If done properly, this should equal smth like {total: 5; noun: 3; verb: 2}
@@ -98,26 +102,29 @@ module.exports.calcPOS = (probWordPOS, emissionPOS, sentence) => {
 		var wordPOSCountingTable = probWordPOS.get(word);
 
 		//If word undefined, just assume it doesn't matter later down the line and give it a value of 1 to not mess with calculation
-		if (mapPos.total == 0) mapPos = standardKeys;
+		var entryNoExist = wordPOSCountingTable.total == 0;
+		if (entryNoExist) wordPOSCountingTable = standardKeys;
 
 		//For each node in the current state (the word)
 		//The key here should now be NOUN, PRONOUN, etc.
 		Object.keys(wordPOSCountingTable).forEach(node => {
 			//If there is no entry in the counting table on the word, the transmissionProb that it's a NOUN, PRONOUN, etc. should all be set to 1 to not mess with anything.
-			var transmissionProb = mapPos.total == 0 ? 1 : wordPOSCountingTable.calcProb(node);
+			var transmissionProb = entryNoExist ? 1 : wordPOSCountingTable.calcProb(node);
 
-			//If key is total and prob is 0, skip it. Else, do README.md's viterbi's alg apparently exists step 2
-			if (key != "total" && prob != 0) 
+			//If key is total or prob is 0, skip it. Else, do README.md's viterbi's alg apparently exists step 2
+			if (node != "total" && transmissionProb != 0) 
 			{
-				var maxProb = 0;
+				var maxProb = -1;
 				var record = []; //Record tracks the POS of the current word and previous words in the chain
-				allStates[i - 1].forEach(nodeInLastState => {
+
+				//Since i is already 1 index behind allStates due to how allStates have 1 initial entry, we just use allStates[i] instead of allStates[i - 1]
+				allStates[i].forEach(nodeInLastState => {
 					var probabilityCurrentNode = nodeInLastState.probs * transmissionProb * emissionPOS.get(node).calcProb(nodeInLastState.pos);
 
 					if (probabilityCurrentNode > maxProb)
 					{
 						maxProb = probabilityCurrentNode;
-						record = nodeInLastState.record.push(node);
+						record = nodeInLastState.record.concat(node);
 					}
 				});
 
@@ -126,7 +133,7 @@ module.exports.calcPOS = (probWordPOS, emissionPOS, sentence) => {
 		});
 
 		allStates.push(currentStates);
-		allStates[i - 1] = null; //We don't need the last word's states anymore as we're done using them
+		allStates[i] = null; //We don't need the last word's states anymore as we're done using them
 	});
 
 	//We now finished finding all the state probabilities of the last word. Find the most probable state (node with max prob) and get their record.
@@ -140,7 +147,8 @@ module.exports.calcPOS = (probWordPOS, emissionPOS, sentence) => {
 
 	//The node with max prob has a record attribute that holds all NOUN, VERB, etc. Now match it to all the words.
 	let toRet = txt.split(" ").map((word, i) => [word, maxProbNode.record[i]]);
-	return toRet;
+	
+	return showProbability ? {prob: maxProbNode.probs, pos: toRet} : toRet;
 }
 
 /**
@@ -152,6 +160,8 @@ module.exports.calculate = (async () => {
 	return this.calcPOS.bind(null, probWordPOS, emissionPOS);
 })();
 
-(async () => {
-	(await this.calculate)()
-})();
+// (async () => {
+// 	(await this.calculate)("a")
+// })();
+
+//For chunk, here's how it goes: convert words to POS string, use regex on the POS string, find index of matches (if not occupied) and map them to word string

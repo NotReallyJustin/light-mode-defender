@@ -16,21 +16,23 @@ module.exports.CountingTable = class {
     /**
      * Add 1 to the probType in the counting table
      * @param {String} probType Case sensititve. The item you're counting
+     * @param {Number} number The number of probabilities to add if you don't want to add 1
      */
-    addProb(probType)
+    addProb(probType, number=1)
     {
         if (!this[probType]) this[probType] = 0;
-		this[probType]++;
-		this.total++;
+		this[probType] += number;
+		this.total += number;
     }
 
     /**
      * @param {String} probType Case sensititve. The item you're finding the probability of 
-     * @returns 0 if the counting table is empty, or the probability of a probType existing amidst the total entries
+     * @returns 0 if the counting table is empty, or the probability of a probType existing amidst the total entries. If no emission entry, return 0.
      */
     calcProb(probType)
     {
         if (!this.total) return 0;
+        if (this[probType] == undefined) return 0;
 		return this[probType] / this.total;
     }
 }
@@ -60,10 +62,6 @@ module.exports.AutoMap = class extends Map
 
 		return super.get(item);
 	}
-}
-
-module.exports.cleanseContractions = (sentence) => {
-
 }
 
 const puncts = `[,.!?:"';<>/=-]`;
@@ -106,7 +104,7 @@ module.exports.fixSpaces = (sentence) => {
 }
 
 const contractPatterns = {
-    "won't": "will not",
+    "won't": "would not",
     "can't": "can not",
     "ain't": "am not",
     "n't": " not",
