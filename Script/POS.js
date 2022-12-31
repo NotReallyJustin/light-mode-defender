@@ -84,8 +84,8 @@ const standardKeys = {
  * @return An array, in [ [word, POS], [word, POS] ] format. If showProbability is true, this returns it in {prob: <float for probability>, pos: [ [word, POS], [word, POS] ]}
  */
 module.exports.calcPOS = (probWordPOS, emissionPOS, sentence, showProbability=false) => {
-	let txt = Helper.fixSpaces(sentence);
-	txt = Helper.cleanseContractions(txt);
+	let txt = Helper.cleanseContractions(sentence);
+	txt = Helper.fixSpaces(txt);
 
 	//Set of the states off all words. The first entry here is states for <START>. Which is just 100% chance it's a "SPACE"
 	let allStates = [
@@ -160,8 +160,172 @@ module.exports.calculate = (async () => {
 	return this.calcPOS.bind(null, probWordPOS, emissionPOS);
 })();
 
-// (async () => {
-// 	(await this.calculate)("a")
-// })();
+// ⭐ Chunk the items
 
-//For chunk, here's how it goes: convert words to POS string, use regex on the POS string, find index of matches (if not occupied) and map them to word string
+/**
+ * Chunks the already POS tagged items into noun/verb/adj... etc phrases. See README.md on how this works.
+ * @param {RegExp[]} chunkArr An array of regular expressions to match the chunk strings. Start from the most advanced query first
+ * @param {String} posWord What you want to label the finished chunk as (ie. if I put "VERB", this will be labeled a "VERB PHRASE")
+ * @param {[String[], String[]]} posTaggedWords Array of words, in [word, POS] format, obtained by running this.calculate
+ * @returns An 3D array that contains 2D arrays of the POS chunk you specified - the words in the POS chunk will still be in their original 1D array, just modified a bit to add the word index
+ */
+const chunkItem = (chunkArr, posWord, posTaggedWords) => {
+	let np = [];
+	let positions = new Map();
+	var wordNumber = 0; //ie. Word #0, word #1, word #2, word #3...
+
+	//Convert the POS tagged words into a POS String that we can run RegExp on
+	//Note: The POS string just looks something like "NOUN VERB PRONOUN VERB"
+	let posStr = posTaggedWords.reduce((cumL, curr) => {
+		//Before we start: note that there is no difference between the nth POS and the nth word because POS and Words are 1-1
+		//When we convert, jot the POS' starting indexes (denoted by cumL.length) in positions map. This map mainly tracks starting indexes of all POS in the sentence
+		//The map value will be used to determine whether a group of words has already been denoted as a phrase to stop overlap
+		//Basically, chartLength --> {occupied, wordNumber}
+		positions.set(cumL.length, {occupied: false, wordNumber: wordNumber++});
+		return `${cumL} ${curr[1]}`;
+	}, "").trim() + " ";
+
+	console.log(positions.keys())
+	console.log(posTaggedWords)
+	//Loop through all Regex queries. If any matches, it's a Noun/Verb/Adj/etc phrase
+	for (var regEx of chunkArr)
+	{
+		var matchArr = posStr.match(regEx);
+		if (matchArr == null) continue; //If no regexp match, move on
+
+		//If there are matches, loop through them all.
+		for (var matchRes of matchArr)
+		{	
+			//Loop through all the match indexes. Adjust is there as a variable so indexOf can detect the next match after we're done with an earlier match
+			//Idx should be the starting index of the REGEX match
+			for (var adjust = 0, idx = posStr.indexOf(matchRes, adjust); idx != -1 && idx < posStr.length; idx = posStr.indexOf(matchRes, adjust))
+			{
+				var grab = positions.get(idx); //Grab the starting index on the positions map to access juicy data about the words in the group
+				if (grab == undefined || grab.occupied) //oop if the words are already occupied (aka already grouped) do nothing
+				{
+					adjust = idx + 1;
+				}
+				else //If the words aren't grouped yet
+				{
+					let npEntry = []; //Creates an array ready to hold all the noun phrases
+
+					let initialCdx = 0; //First string index of the current REGEX phrase match
+
+					//For each word in the sentence, take note of their starting indexes bois because we're about to do some trolling
+					for (var startIdxWord of positions.keys())
+					{
+						//If the starting index of the is within the index bounds of the REGEX match
+						if (+startIdxWord >= idx && +startIdxWord < idx + matchRes.length)
+						{		
+							var currentWord = positions.get(startIdxWord);
+
+							//Set it to occupied and add their current word to the npEntry because it's a match bois
+							currentWord.occupied = true;
+							npEntry.push([...posTaggedWords[currentWord.wordNumber], currentWord.wordNumber, posWord]);
+
+							//If npEntry.length == 1, the first word in the npEntry has been added. This means that's the first index of the REGEX match phrase. Jot it down.
+							if (npEntry.length == 1)
+							{
+								initialCdx = startIdxWord;
+							}
+						}
+						cdx++;
+					}
+
+					//We're doing like an insertion sort - go to the array of noun phrases and insertion sort it by the initialCdx
+					//We're going to use a empty string placeholder until we can actually chuck npEntry in because moving references is crazy
+					np.push("");
+					for (var c = np.length - 1; c >= 0; c--)
+					{
+						//np[c - 1][0][2] gives us the cdx of the first item in the np chunk
+						if (c - 1 >= 0 && np[c - 1][0][2] > initialCdx)
+						{
+							var curr = np[c];
+							np[c] = np[c - 1];
+							np[c - 1] = curr;
+						}
+						else
+						{
+							np[c] = npEntry;
+							break;
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+	return np;
+}
+module.exports.chunkItem = chunkItem;
+
+/*
+Noun chunk, but we just used partial application on that
+ie. The weird Miku Cult that laundered money got disbanded
+This triggers both <ADJ> <PNOUN> <NOUN> <SCONJ> <VERB> <NOUN> and <ADJ> <PNOUN> <NOUN>, but the former takes precedence
+@param posTaggedWords - array of stuff that went through the POS tagger chronologically. This param will not be changed
+For the regEx arrays -->
+0) Annoying, angry cat that has been scratching, ripping, and tearing my new couch
+0) The cute, adorable, and chonky seal, cat, and sad frog that jumped, slowly climbed, and quietly, stealthily, and carefully walked on the soft, concrete, and wet grass, dirt path, and bridge
+0) Heathenous dark mode user that shames and attacks light mode users
+0) Spicy, hot sauce I ate today --> There *should* be a not but we all know Discord users don't talk like this
+0) Turtle Bot that likes to meme on moderators, be annoying, and waste precious bot slots
+0) The mode that Justin does not use
+1) Random yellow cat
+1) Random cat, chonky seal, and cute sandwich
+*/
+const chunkNoun = chunkItem.bind(null, [
+	/(((PART )*DETERMINER |PUNCTUATION CONJUNCTION |DETERMINER |PUNCTUATION |CONJUNCTION )*(ADJECTIVE |ADJECTIVE PUNCTUATION |CONJUNCTION ADJECTIVE )*(\bNOUN |PNOUN |PRONOUN ))+((SCONJ AUX |SCONJ IS |SCONJ AUX IS |(SCONJ )?PRONOUN |(SCONJ )?\bNOUN |(SCONJ )?PNOUN |SCONJ )+((AUX PART |PART )?(ADVERB |ADVERB PUNCTUATION |ADVERB CONJUNCTION |ADVERB PUNCTUATION CONJUNCTION )*(\bVERB PUNCTUATION CONJUNCTION |\bVERB PUNCTUATION |\bVERB CONJUNCTION |\bVERB )((PUNCTUATION |CONJUNCTION )*(DETERMINER |PRONOUN |ADPOSITION )*(ADJECTIVE |ADJECTIVE PUNCTUATION |CONJUNCTION ADJECTIVE )*(\bNOUN |PNOUN |PRONOUN |PNOUN ))*)+)+/gmi,
+	/(((PART )*DETERMINER |PUNCTUATION CONJUNCTION |CONJUNCTION |PUNCTUATION )*(ADJECTIVE |ADJECTIVE PUNCTUATION |CONJUNCTION ADJECTIVE )*(NOUN |PNOUN |PRONOUN ))+/gmi
+], "NOUN");
+
+/*
+Takes precedence over NPs in comparison phrases but not adj phrases, basically also a partial application of chunkItem
+So "you look more like a dog than I do" > "dogs
+@param posTaggedWords - array of things that went through POS tagger
+@post param will not be changed
+Chunks comparisons, but ig it also chunks adjectives later down the hierarchy line
+regEx target examples --> 
+0) Is nicer toward 
+0) Is better than
+0) Is less complicated than
+0) Is way less dangerous compared to
+0) Is drastically more important because
+0) Was way worse compared with
+1) Is nicer towards
+1) Is better for blinding
+1) Is better used for eating
+*/
+const chunkComp = chunkItem.bind(null, [
+	/(PART |AUX |IS )*COMPARISON ((.?)SCONJ |(.?)VERB-COMP )/gmi,
+	/(PART |AUX |IS )*COMPARISON (ADPOSITION VERB |VERB ADPOSITION VERB )*/gmi,
+], "COMPARISON");
+
+/*
+0) Looks really cute, extremely happy, and really energetic
+0) Has been extremely friendly
+0) Is extremely chonky
+0) Is not chonky
+*/
+const chunkAdj = chunkItem.bind(null, [
+	/((?<!^)AUX |(?<!^)IS |(?<!^)PART )+((ADVERB |VERB )*ADJECTIVE PUNCTUATION |(ADVERB |VERB )*ADJECTIVE CONJUNCTION |(ADVERB |VERB )*CONJUNCTION ADJECTIVE |(ADVERB |VERB |PART )*ADJECTIVE )+/gmi
+], "ADJECTIVE");
+
+/*
+0) Wants desperately to be partying
+0) Savagely, brutally, and angrily punched
+1) Has attacked
+1) Has viciously, aggressively, and painfully attacked
+1) Will be granted
+1) Would have been freed
+1) To be seen
+1) To see
+*/
+const chunkVerb = chunkItem.bind(null, [
+	/(AUX IS |AUX |PART IS |PART )*(ADVERB |PUNCTUATION CONJUNCTION ADVERB |PUNCTUATION ADVERB )*(IS |PART IS )?(\bVERB\b |PUNCTUATION CONJUNCTION \bVERB\b |PUNCTUATION \bVERB\b )+/gmi,
+	/(AUX |AUX IS |PART IS |PART )*(ADVERB |PUNCTUATION ADVERB |(PUNCTUATION )?CONJUNCTION ADVERB )*\bVERB\b/gmi
+], "VERB");
+
+(async () => {
+	console.log(chunkNoun((await this.calculate)("If you're feeling like you need a little bit of company you might be in for a ride.")));
+})();
