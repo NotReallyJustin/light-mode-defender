@@ -63,6 +63,10 @@ const testReadPOS = async () => {
     return true;
 }
 
+/**
+ * See VTB chart. Creates a fake VTB graph to check whether calcPOS is functional
+ * @returns Whether calcPOS works
+ */
 const testCalcPOS = () => {
     let emission = new Helper.AutoMap(Helper.CountingTable);
     emission.get("AUX").addProb("NOUN");
@@ -99,6 +103,54 @@ const testCalcPOS = () => {
 }
 
 /**
+ * Creates own RegExp equations and fake POS tags to test chunkItem. This also checks whether it chunks it in chronological order of the RegExp array
+ * @return Whether chunkItem works
+ */
+const testChunkItem = () => {
+    const regExps = [
+        /NOUN VERB DETERMINER (NOUN|PNOUN|PRONOUN)/gmi,
+        /NOUN VERB/gmi,
+    ];
+
+    const sentence = [
+        ["Donut", "NOUN"],
+        ["donuting", "VERB"],
+        ["a", "DETERMINER"],
+        ["Munchkin", "PNOUN"],
+        ["actually", "RANDOM"],
+        ["Donut", "NOUN"],
+        ["Sleeps", "VERB"],
+        ["but", "SCONJ"],
+        ["Donut", "NOUN"],
+        ["donuting", "VERB"],
+        ["a", "DETERMINER"],
+        ["duck", "NOUN"]
+    ];
+
+    const expected = [
+        [
+            ["Donut", "NOUN", 0, "TEST"],
+            ["donuting", "VERB", 1, "TEST"],
+            ["a", "DETERMINER", 2, "TEST"],
+            ["Munchkin", "PNOUN", 3, "TEST"]
+        ],
+        [
+            ["Donut", "NOUN", 8, "TEST"],
+            ["donuting", "VERB", 9, "TEST"],
+            ["a", "DETERMINER", 10, "TEST"],
+            ["duck", "NOUN", 11, "TEST"]
+        ],
+        [
+            ["Donut", "NOUN", 5, "TEST"],
+            ["Sleeps", "VERB", 6, "TEST"],
+        ],
+    ];
+
+    const testChunk = POS.chunkItem(regExps, "TEST", sentence);
+    return expected.toString() == testChunk.toString();
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
@@ -109,7 +161,8 @@ module.exports.runTests = async () => {
         testFixSpaces,
         testCleanseContract,
         testReadPOS,
-        testCalcPOS
+        testCalcPOS,
+        testChunkItem
     ];
     
     for (test of toTest)
