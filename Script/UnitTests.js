@@ -151,6 +151,126 @@ const testChunkItem = () => {
 }
 
 /**
+ * Unit test for POS.chunkMultiple()
+ * This overwrites the functions for chunkIndividual (basically set the chunkIndividual output) to ensure that we're only testing how well chunkMultiple pieces stuff together.
+ * The override capabilities are also tested
+ * @return whether chunkMultiple() works
+ */
+const testChunkMultiple = () => {
+    const sentence = [
+        ["L", "THEL"],
+        ["plus", "CONJ"],
+        ["ratio", "VERB"],
+        ["plus", "CONJ"],
+        ["bozo", "NOUN"],
+        ["plus", "CONJ"],
+        ["you", "PNOUN"],
+        ["fell", "VERB"],
+        ["off", "ADPOSITION"],
+        ["plus", "CONJ"],
+        ["that", "PNOUN"],
+        ["is", "IS"],
+        ["wacko", "ADJ"],
+        ["plus", "CONJ"],
+        ["beep", "HI"],
+        ["bop", "TEST"],
+        ["boink", "NO"]
+    ];
+
+    const expected = [
+        [
+          ["L", "THEL", 0, "FATL"],  
+        ],
+        ["plus", "CONJ", 1],
+        [
+            ["ratio", "VERB", 2, "VERB"], 
+        ],
+        ["plus", "CONJ", 3],
+        [
+            ["bozo", "NOUN", 4, "NOUN"],
+        ],        
+        ["plus", "CONJ", 5],
+        [
+            ["you", "PNOUN", 6, "TERM"],
+            ["fell", "VERB", 7, "TERM"],
+            ["off", "ADPOSITION", 8, "TERM"],
+        ],
+        ["plus", "CONJ", 9],
+        [
+            ["that", "PNOUN", 10, "TERM"],
+            ["is", "IS", 11, "TERM"],
+            ["wacko", "ADJ", 12, "TERM"],
+        ],
+        ["plus", "CONJ", 13],
+        [
+            ["beep", "HI", 14, "TERM"],
+            ["bop", "TEST", 15, "TERM"],
+            ["boink", "NO", 16, "TERM"]
+        ]
+    ];
+
+    const testChunk = POS.chunkMultiple([
+        () => [ //Chunk term
+            [
+                ["you", "PNOUN", 6, "TERM"],
+                ["fell", "VERB", 7, "TERM"],
+                ["off", "ADPOSITION", 8, "TERM"],
+            ],
+            [
+                ["that", "PNOUN", 10, "TERM"],
+                ["is", "IS", 11, "TERM"],
+                ["wacko", "ADJ", 12, "TERM"],
+            ],
+            [
+                ["beep", "HI", 14, "TERM"],
+                ["bop", "TEST", 15, "TERM"],
+                ["boink", "NO", 16, "TERM"]
+            ]
+        ],
+        () => [ //Chunk noun
+            [
+                ["bozo", "NOUN", 4, "NOUN"]
+            ],
+            [
+                ["you", "PNOUN", 6, "NOUN"]
+            ],
+            [
+                ["bop", "TEST", 15, "NOUN"]
+            ]
+        ],
+        () => [ //Chunk verb
+            [
+                ["ratio", "VERB", 2, "VERB"]
+            ],
+            [
+                ["fell", "VERB", 7, "VERB"]
+            ],
+            [
+                ["beep", "HI", 14, "VERB"]
+            ]
+        ],
+        () => [ //Chunk fat L
+            [
+                ["L", "THEL", 0, "FATL"]
+            ]
+        ]
+    ], sentence);
+
+    if (testChunk.toString() == expected.toString())
+    {
+        return true;
+    }
+    else
+    {
+        console.log("> testChunkMultiple failed: Items don't match. Got:");
+        console.log(testChunk.toString());
+        console.log("---")
+        console.log(expected.toString());
+        return false;
+    }
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
@@ -162,7 +282,8 @@ module.exports.runTests = async () => {
         testCleanseContract,
         testReadPOS,
         testCalcPOS,
-        testChunkItem
+        testChunkItem,
+        testChunkMultiple
     ];
     
     for (test of toTest)

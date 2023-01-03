@@ -328,7 +328,7 @@ const chunkVerb = chunkItem.bind(null, [
 
 /**
  * Completely chunks the given sentence, given in POS tagged format ([ [word, POS] ]), and returns all matching chunks in sequential order
- * Anything that does not belong to a chunk remains as in POS tagged format instead of in their respective chunks
+ * Anything that does not belong to a chunk remains as in [word, POS, index] instead in their respective chunks
  * @param {Function[]} toChunk An array of chunkItem functions to run on the posSorted sentence. Earlier indexes here take precedence if things overlap
  * @param {[String[], String[]]} posTaggedWords Array of words, in [word, POS] format, obtained by running this.calculate
  * @return An array that contains all chunks and individual words (if not chunked) in sequential format
@@ -352,39 +352,43 @@ module.exports.chunkMultiple = (toChunk, posSorted) => {
 		//Loop through every POS chunk function 
 		for (var chunk in chunkResults)
 		{
+			// console.log(chunk)
+			// console.log(chunkResults[chunk])
+			// console.log("----------")
 			//Look through every POS chunk the function gave. 
 			for (var posChunkIdx = 0; posChunkIdx < chunkResults[chunk].length; posChunkIdx++)
 			{
 				const currentPOSChunk = chunkResults[chunk][posChunkIdx];
 				//If the first index of the currentPOSChunk is equal to the word number, add it to the sequential format we're returning. If not, that's a future iteration problem.
-				if (currentPOSChunk[0][2] == wordNumber)
+				if (currentPOSChunk[0][2] == currentWordNumber)
 				{
 					toRet.push(currentPOSChunk);
 					currentWordNumber = currentPOSChunk[currentPOSChunk.length - 1][2] + 1;
 
 					//Remove it from chunkResults so we don't iterate on this in the future again
-					chunkResults.splice(posChunkIdx, 1);
+					chunkResults[chunk].splice(posChunkIdx, 1);
 					posChunkIdx--;
 
 					break;
 				}
-				else if (currentPOSChunk[0][2] > wordNumber) //If it's greater, great nothing else will match. Skip it
+				else if (currentPOSChunk[0][2] > currentWordNumber) //If it's greater, great nothing else will match. Skip it
 				{
 					break;
 				}
 				else //If wordNumber is < currentWordNumber, then something overlapped. In this case, the thing is useless.
 				{
-					chunkResults.splice(posChunkIdx, 1);
+					chunkResults[chunk].splice(posChunkIdx, 1);
 					posChunkIdx--;
 				}
 			}
-			//In the end, if the currentWordNumber didn't change, that means no POSChunk that includes the current index has been added
-			//In that case, just chuck it in
-			if (currentWordNumber == wordNumber)
-			{
-				toRet.push(posSorted[i]);
-				currentWordNumber++;
-			}
+		}
+
+		//In the end after going thru all chunks, if the currentWordNumber didn't change, that means no POSChunk that includes the current index has been added
+		//In that case, just chuck it in
+		if (currentWordNumber == wordNumber)
+		{
+			toRet.push(posSorted[wordNumber].concat(wordNumber));
+			currentWordNumber++;
 		}
 	}
 
