@@ -80,6 +80,35 @@ After making the relation nodes that act in hierarchal order, we describe things
 <img src="https://i.imgur.com/FwYDzb2.png" /> <br />
 <img src="https://i.imgur.com/1Sm0f2L.png" /> <br />
 
+## Helpy functions
+It's kind of like RegExp but we're hardcoding it <br>
+Create a lookAhead() and lookBehind() function that will find a POS chunk or POS type (both represented by relation nodes) before or after the current relation node. These are stolen from Srs Bot Running before revamp<br>
+<br>
+
+```js
+const lookAhead = (relationArr, posType, wantChunk, idx) => {
+	for (var i = idx + 1; i < relationArr.length; i++)
+	{
+		if (new RegExp(posType, 'gmi').test(relationArr[i].type) && relationArr[i].isChunk == wantChunk)
+		{
+			return relationArr[i];
+		}
+	}
+	return null;
+}
+
+const lookBehind = (relationArr, posType, wantChunk, idx) => {
+	for (var i = idx - 1; i >= 0; i--)
+	{
+		if (new RegExp(posType, 'gmi').test(relationArr[i].type) && relationArr[i].isChunk == wantChunk)
+		{
+			return relationArr[i];
+		}
+	}
+	return null;
+}
+``` 
+
 # 4) Pronoun Anaphora
 
 # 5) Find which NOUN PHRASEs mention light mode
