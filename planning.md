@@ -70,18 +70,28 @@ Use JSON probably, it's easier. Add a property that determines whether the POS i
 4. Now, mark everything in those ranges as occupied and yeet them in the np array
 5. Remember to sort the np array by which one comes first (basically, sort by corresponding POS index)
 ```
-# 3) Pronoun Anaphora
+# 3) Relation Extraction
+## MYOD (Make your own node lol thank RobbyQ for the name)
+Create a class called Relation. Relation will act like a node. <br />
+<img src="https://i.imgur.com/7RpzTgn.png" /> <br />
+The goal is to treat each sentence as a hierarchy of POS components. The child relation is a part of the parent relation. In human words, it should ideally look like this: <br>
+<img src="https://i.imgur.com/FEjK1G9.png" /> <br />
+After making the relation nodes that act in hierarchal order, we describe things much more easily and visualize POS.js: <br>
+<img src="https://i.imgur.com/FwYDzb2.png" /> <br />
+<img src="https://i.imgur.com/1Sm0f2L.png" /> <br />
 
-# 4) Find which NOUN PHRASEs mention light mode
+# 4) Pronoun Anaphora
 
-# 5) Find Negations
+# 5) Find which NOUN PHRASEs mention light mode
 
-# 6) Sentiment Analysis all light mode noun phrases
+# 6) Find Negations
 
-# 7) Return score
+# 7) Sentiment Analysis all light mode noun phrases
 
-# 8) ???
+# 8) Return score
+
+# 9) ???
 ## Write tests for everything
 I'll get to that probably in 2077
 
-# 9) Religious Victory
+# 10) Religious Victory
