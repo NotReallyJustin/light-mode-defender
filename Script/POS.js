@@ -330,7 +330,7 @@ const chunkVerb = chunkItem.bind(null, [
  * Completely chunks the given sentence, given in POS tagged format ([ [word, POS] ]), and returns all matching chunks in sequential order
  * Anything that does not belong to a chunk remains as in [word, POS, index] instead in their respective chunks
  * @param {Function[]} toChunk An array of chunkItem functions to run on the posSorted sentence. Earlier indexes here take precedence if things overlap
- * @param {[String[], String[]]} posTaggedWords Array of words, in [word, POS] format, obtained by running this.calculate
+ * @param {[String[], String[]]} posSorted Array of words, in [word, POS] format, obtained by running this.calculate
  * @return An array that contains all chunks and individual words (if not chunked) in sequential format
  */
 module.exports.chunkMultiple = (toChunk, posSorted) => {
