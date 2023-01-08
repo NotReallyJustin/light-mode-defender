@@ -86,23 +86,23 @@ Create a lookAhead() and lookBehind() function that will find a POS chunk or POS
 <br>
 
 ```js
-const lookAhead = (relationArr, posType, wantChunk, idx) => {
-	for (var i = idx + 1; i < relationArr.length; i++)
+const lookAhead = (levelNode, desiredPOSType, findChunk, startIdx) => {
+	for (var i = startIdx; i < levelNode.length; i++)
 	{
-		if (new RegExp(posType, 'gmi').test(relationArr[i].type) && relationArr[i].isChunk == wantChunk)
+		if (levelNode[i].pos == desiredPOSType && levelNode[i].isChunk == findChunk)
 		{
-			return relationArr[i];
+			return levelNode[i];
 		}
 	}
 	return null;
 }
 
-const lookBehind = (relationArr, posType, wantChunk, idx) => {
-	for (var i = idx - 1; i >= 0; i--)
+const lookBehind = (levelNode, desiredPOSType, findChunk, startIdx) => {
+	for (var i = startIdx - 1; i >= 0; i--)
 	{
-		if (new RegExp(posType, 'gmi').test(relationArr[i].type) && relationArr[i].isChunk == wantChunk)
+		if (levelNode[i].pos == desiredPOSType && levelNode[i].isChunk == findChunk)
 		{
-			return relationArr[i];
+			return levelNode[i];
 		}
 	}
 	return null;
