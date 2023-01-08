@@ -4,6 +4,7 @@
 */
 const Helper = require("./Helper");
 const POS = require("./POS");
+const RelationExtraction = require("./RelationExtraction");
 
 /**
  * Tests Helper.fixSpaces. There's only 1 but all the possible errors are thrown into this test case
@@ -271,6 +272,67 @@ const testChunkMultiple = () => {
 }
 
 /**
+ * Tests the Relation class in ./RelationExtraction.js
+ * @return Whether the relation class works
+ */
+const testRelation = () => {
+    let posTag = [
+        ["The", "DETERMINER", 0, "NOUN"],
+        ["cat", "NOUN", 1, "NOUN"],
+        ["in", "ADPOSITION", 2, "NOUN"],
+        ["Las", "PNOUN", 3, "NOUN"],
+        ["Vegas", "PNOUN", 4, "NOUN"]
+    ];
+
+    let relationTree = new RelationExtraction.Relation(undefined, undefined, "ROOT");
+    relationTree.createChild(posTag);
+    relationTree.createChild(["sat", "VERB"]);
+    relationTree.children[0].generateChildFromChunk();
+
+    try
+    {
+        if (relationTree.posTag.toString() != [].toString()) throw "Root node POS tag is not []";
+        if (relationTree.pos != "ROOT") throw "Root node POS is not ROOT";
+        if (relationTree.parent != null) throw "Root node's parent is not null";
+        if (relationTree.children.length != 2) throw "Root node does not have 2 child nodes";
+
+        if (relationTree.children[1].posTag.toString() != ["sat", "VERB"].toString()) throw "Relation doesn't properly transfer posTag for POS Arrays";
+        if (relationTree.children[1].pos != "VERB") throw "Relation doesn't have right POS type for POS Arrays";
+        if (relationTree.children[1].children.length != 0) throw "Relation wacked up the children for POS Arrays";
+        if (relationTree.children[1].parent != relationTree) throw "Relation parent is not working for POS Arrays";
+
+        if (relationTree.children[0].parent != relationTree) throw "Relation parent not working for POS chunks";
+        if (relationTree.children[0].posTag.toString() != posTag.toString()) throw "Relation POS chunk doesn't have right POS tag";
+        if (relationTree.children[0].pos != "NOUN") throw "Relation doesn't have right POS for POS chunks";
+        if (relationTree.children[0].children.length != 5) throw "GenerateChildFromChunk for POS chunk doesn't give right number of children";
+        
+        if (relationTree.children[0].children[0].parent != relationTree.children[0]) throw "POS chunk's child's parent is not POS chunk";
+        if (relationTree.children[0].children[0].pos != "DETERMINER") throw "POS chunk's child doesn't have right POS";
+        if (relationTree.children[0].children[0].posTag.toString() != ["The", "DETERMINER", 0, "NOUN"].toString()) throw "POS chunk's child doesn't have right POS tag";
+        if (relationTree.children[0].children[0].children.length != 0) throw "POS chunk's child somehow has children too";
+
+        if (relationTree.toString() != "") throw "Root node toString is not empty";
+        if (relationTree.children[1].toString() != "sat") throw "Relation doesn't have right toString for POS Arrays";
+        if (relationTree.children[0].toString() != "the cat in las vegas") throw "Relation doesn't have right toString for POS Chunks";
+        if (relationTree.children[0].children[0].toString() != "the") throw "Relation doesn't have right toString for child of POS chunks";
+
+        var findNoun = relationTree.children[0].findNoun();
+        if (findNoun.length != 2) return "Relation findNoun does not give the right number of nouns";
+        if (findNoun[0].length != 1) return "Relation findNoun's array isn't structured properly for a word";
+        if (findNoun[0][0].toString() != "cat") return "Relation findNoun failed for 1 word";
+        if (findNoun[1].length != 2) return "Relation findNoun's array isn't structured properly for 2 words";
+        if (findNoun[1][1].toString() != "vegas") return "Relation findNoun failed for 2 words";
+    }
+    catch(err)
+    {
+        console.log(`> testRelation failed: ${err}`);
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
@@ -283,7 +345,8 @@ module.exports.runTests = async () => {
         testReadPOS,
         testCalcPOS,
         testChunkItem,
-        testChunkMultiple
+        testChunkMultiple,
+        testRelation
     ];
     
     for (test of toTest)
