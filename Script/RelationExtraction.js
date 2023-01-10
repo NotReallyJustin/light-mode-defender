@@ -137,7 +137,7 @@ const lookAhead = (levelNode, desiredPOSType, findChunk, startIdx) => {
  * @returns The first look behind that works, or null if nothing matches
  */
 const lookBehind = (levelNode, desiredPOSType, findChunk, startIdx) => {
-	for (var i = startIdx - 1; i >= 0; i--)
+	for (var i = startIdx; i >= 0; i--)
 	{
 		if (levelNode[i].pos == desiredPOSType && levelNode[i].isChunk == findChunk)
 		{

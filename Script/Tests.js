@@ -272,7 +272,7 @@ const testChunkMultiple = () => {
 }
 
 /**
- * Tests the Relation class in ./RelationExtraction.js
+ * Tests the Relation class in ./RelationExtraction.js by creating fake relations
  * @return Whether the relation class works
  */
 const testRelation = () => {
@@ -333,6 +333,105 @@ const testRelation = () => {
 }
 
 /**
+ * Tests look ahead by creating fake relation nodes.
+ * Not a unit test but an integration test because I don't want to manually type out the Relation class.
+ * @returns Whether or not RelationExtraction.lookAhead() works
+ */
+const testLookAhead = () => {
+    let posTag = [
+        ["The", "DETERMINER", 0, "NOUN"],
+        ["cat", "NOUN", 1, "NOUN"],
+        ["in", "ADPOSITION", 2, "NOUN"],
+        ["Las", "PNOUN", 3, "NOUN"],
+        ["Vegas", "PNOUN", 4, "NOUN"]
+    ];
+
+    let relationTree = new RelationExtraction.Relation(undefined, undefined, "ROOT");
+    relationTree.createChild(posTag);
+    relationTree.createChild(["sat", "VERB"]);
+    relationTree.children[0].generateChildFromChunk();
+
+    try
+    {
+        if (RelationExtraction.lookAhead(relationTree.children, "VERB", false, 0) != relationTree.children[1])
+        {
+            throw "Look ahead failed for top level look ahead search";
+        }
+
+        if (RelationExtraction.lookAhead(relationTree.children, "VERB", true, 0) != null)
+        {
+            throw "Look ahead doesn't properly detect chunked elements properly";
+        }
+        
+        if (RelationExtraction.lookAhead(relationTree.children[0].children, "ADJECTIVE", false, 0) != null)
+        {
+            throw "Look ahead does not properly detect null elements";
+        }
+
+        if (RelationExtraction.lookAhead(relationTree.children[0].children, "PNOUN", false, 4) != relationTree.children[0].children[4])
+        {
+            throw "Look ahead doesn't work properly for children of children nodes";
+        }
+    }
+    catch(err)
+    {
+        console.log(`> testLookAhead failed: ${err}`);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Integration test for look behind. Relies on Relation class and lookBehind to work properly.
+ * @returns Whether or not RelationExtraction.lookBehind() works
+ */
+const testLookBehind = () => {
+    let posTag = [
+        ["The", "DETERMINER", 0, "NOUN"],
+        ["cat", "NOUN", 1, "NOUN"],
+        ["in", "ADPOSITION", 2, "NOUN"],
+        ["Las", "PNOUN", 3, "NOUN"],
+        ["Vegas", "PNOUN", 4, "NOUN"]
+    ];
+
+    let relationTree = new RelationExtraction.Relation(undefined, undefined, "ROOT");
+    relationTree.createChild(posTag);
+    relationTree.createChild(["sat", "VERB"]);
+    relationTree.children[0].generateChildFromChunk();
+
+    try
+    {
+        if (RelationExtraction.lookBehind(relationTree.children, "NOUN", true, 1) != relationTree.children[1])
+        {
+            throw "Look behind failed for top level look ahead search";
+        }
+
+        if (RelationExtraction.lookBehind(relationTree.children, "NOUN", false, 1) != null)
+        {
+            throw "Look behind doesn't properly detect chunked elements properly";
+        }
+        
+        if (RelationExtraction.lookBehind(relationTree.children[0].children, "ADJECTIVE", false, 0) != null)
+        {
+            throw "Look behind does not properly detect null elements";
+        }
+
+        if (RelationExtraction.lookBehind(relationTree.children[0].children, "ADPOSITION", false, 4) != relationTree.children[0].children[2])
+        {
+            throw "Look behind doesn't work properly for children of children nodes";
+        }
+    }
+    catch(err)
+    {
+        console.log(`> testLookBehind failed: ${err}`);
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
@@ -346,7 +445,9 @@ module.exports.runTests = async () => {
         testCalcPOS,
         testChunkItem,
         testChunkMultiple,
-        testRelation
+        testRelation,
+        testLookAhead,
+        testLookBehind
     ];
     
     for (test of toTest)
