@@ -333,6 +333,86 @@ const testRelation = () => {
 }
 
 /**
+ * Performs the exact same test as TestRelation. However, this time we create the relations from a POSArr.
+ * @return Whether RelationExtraction.Relation.buildFromPOSArr() works
+ */
+const testRelationFromPOSArr = () => {
+    let posTag = [
+        ["The", "DETERMINER", 0, "NOUN"],
+        ["cat", "NOUN", 1, "NOUN"],
+        ["in", "ADPOSITION", 2, "NOUN"],
+        ["Las", "PNOUN", 3, "NOUN"],
+        ["Vegas", "PNOUN", 4, "NOUN"]
+    ];
+
+    const relationTree = RelationExtraction.Relation.buildFromPOSArr([
+        [
+            ["The", "DETERMINER", 0, "NOUN"],
+            ["cat", "NOUN", 1, "NOUN"],
+            ["in", "ADPOSITION", 2, "NOUN"],
+            ["Las", "PNOUN", 3, "NOUN"],
+            ["Vegas", "PNOUN", 4, "NOUN"]
+        ],
+        ["sat", "VERB"],
+        [".", "PUNCTUATIONEND"],
+        [
+            ["The", "DETERMINER", 0, "NOUN"],
+            ["cat", "NOUN", 1, "NOUN"],
+            ["in", "ADPOSITION", 2, "NOUN"],
+            ["Las", "PNOUN", 3, "NOUN"],
+            ["Vegas", "PNOUN", 4, "NOUN"]
+        ],
+        ["ate", "VERB"],
+    ]);
+
+    try
+    {
+        if (relationTree.posTag.toString() != [].toString()) throw "Root node POS tag is not []";
+        if (relationTree.pos != "ROOT") throw "Root node POS is not ROOT";
+        if (relationTree.parent != null) throw "Root node's parent is not null";
+        if (relationTree.children.length != 2) throw "Root node does not have 2 sentences";
+
+        const sentenceOne = relationTree.children[0];
+        //console.log(sentenceOne)
+
+        if (sentenceOne.children.length != 3) throw "Sentence one doesn't have 3 POSTag components";
+        if (sentenceOne.children[1].posTag.toString() != ["sat", "VERB"].toString()) throw "Relation doesn't properly transfer posTag for POS Arrays";
+        if (sentenceOne.children[1].pos != "VERB") throw "Relation doesn't have right POS type for POS Arrays";
+        if (sentenceOne.children[1].children.length != 0) throw "Relation wacked up the children for POS Arrays";
+        if (sentenceOne.children[1].parent != relationTree.children[0]) throw "Relation parent is not working for POS Arrays";
+
+        if (sentenceOne.children[0].parent != relationTree.children[0]) throw "Relation parent not working for POS chunks";
+        if (sentenceOne.children[0].posTag.toString() != posTag.toString()) throw "Relation POS chunk doesn't have right POS tag";
+        if (sentenceOne.children[0].pos != "NOUN") throw "Relation dfoesn't have right POS for POS chunks";
+        if (sentenceOne.children[0].children.length != 5) throw "GenerateChildFromChunk for POS chunk doesn't give right number of children";
+        
+        if (sentenceOne.children[0].children[0].parent != sentenceOne.children[0]) throw "POS chunk's child's parent is not POS chunk";
+        if (sentenceOne.children[0].children[0].pos != "DETERMINER") throw "POS chunk's child doesn't have right POS";
+        if (sentenceOne.children[0].children[0].posTag.toString() != ["The", "DETERMINER", 0, "NOUN"].toString()) throw "POS chunk's child doesn't have right POS tag";
+        if (sentenceOne.children[0].children[0].children.length != 0) throw "POS chunk's child somehow has children too";
+
+        if (relationTree.toString() != "") throw "Root node toString is not empty";
+        if (sentenceOne.children[1].toString() != "sat") throw "Relation doesn't have right toString for POS Arrays";
+        if (sentenceOne.children[0].toString() != "the cat in las vegas") throw "Relation doesn't have right toString for POS Chunks";
+        if (sentenceOne.children[0].children[0].toString() != "the") throw "Relation doesn't have right toString for child of POS chunks";
+
+        var findNoun = sentenceOne.children[0].findNoun();
+        if (findNoun.length != 2) return "Relation findNoun does not give the right number of nouns";
+        if (findNoun[0].length != 1) return "Relation findNoun's array isn't structured properly for a word";
+        if (findNoun[0][0].toString() != "cat") return "Relation findNoun failed for 1 word";
+        if (findNoun[1].length != 2) return "Relation findNoun's array isn't structured properly for 2 words";
+        if (findNoun[1][1].toString() != "vegas") return "Relation findNoun failed for 2 words";
+    }
+    catch(err)
+    {
+        console.log(`> testRelationFromPOSArr failed: ${err}`);
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * Tests look ahead by creating fake relation nodes.
  * Not a unit test but an integration test because I don't want to manually type out the Relation class.
  * @returns Whether or not RelationExtraction.lookAhead() works
@@ -402,7 +482,7 @@ const testLookBehind = () => {
 
     try
     {
-        if (RelationExtraction.lookBehind(relationTree.children, "NOUN", true, 1) != relationTree.children[1])
+        if (RelationExtraction.lookBehind(relationTree.children, "NOUN", true, 1) != relationTree.children[0])
         {
             throw "Look behind failed for top level look ahead search";
         }
@@ -446,6 +526,7 @@ module.exports.runTests = async () => {
         testChunkItem,
         testChunkMultiple,
         testRelation,
+        testRelationFromPOSArr,
         testLookAhead,
         testLookBehind
     ];

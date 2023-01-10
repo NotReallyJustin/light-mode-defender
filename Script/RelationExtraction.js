@@ -8,7 +8,7 @@ class Relation
 {
     /**
      * Constructor for relation node. Don't use this unless it's the root node; run this.createChild() instead.
-     * @param {String[]} posTag The [word, POS, wordIndex] or 2D POS chunk that's represented by the "relation node"
+     * @param {String[]} posTag The [[word, POS, wordIndex, chunkType],...] or 2D POS [word, POS] chunk that's represented by the "relation node"
      * @param {Relation} parent The parent of the relation node.
      * @param {String} forcedPOS If entered, this node will be forcibly set to this POS. If not, the POS will be detected via posTag
      */
@@ -53,11 +53,13 @@ class Relation
      * Appends a new child relation to the current relation
      * @param {String[]} posTag The [word, POS, wordIndex] or 3D POS chunk that's represented by the "relation node"
      * @param {String} forcedPOS If entered, this node will be forcibly set to this POS. If not, the POS will be detected via posTag
+     * @return {Relation} The newly created child, in case you want to do stuff with it
      */
     createChild(posTag, forcedPOS)
     {
         var newRel = new Relation(posTag, this, forcedPOS);
         this.children.push(newRel);
+        return newRel;
     }
 
     /**
@@ -104,6 +106,37 @@ class Relation
         }
         return [];
     }
+
+    /**
+     * Constructs a complete relation tree like the one shown https://i.imgur.com/1Sm0f2L.png from a POS Array that contains chunks and POS [word, POS]
+     * @param {(String[] | String[][])} posArr The POS Array that contains chunks and POS [word, POS]
+     * @return {Relation} A fully fledged relation tree starting from Root
+     */
+    static buildFromPOSArr(posArr)
+    {
+        let root = new Relation(undefined, undefined, "ROOT");
+
+        //Add each sentence as children of the root class
+        for (var i = 0, onHold = 0; i < posArr.length; i++)
+        {
+            if ((posArr[i][1] == "PUNCTUATIONEND" && /\\n|;|\./gmi.test(posArr[i][0])) || i == posArr.length - 1)
+            {
+                //Find all the POSTags belonging to each sentence and create relation nodes from them (bc they are a sentence)
+                let sentence = root.createChild(posArr.slice(onHold, i + 1), "SENTENCE");  
+
+                //For each posTag in the sentence, create a child node. If the child nodes represent chunks, generate the appropriate children for chunk
+                //Again, if future justin is ever confused, see https://i.imgur.com/1Sm0f2L.png
+                for (var posTag of sentence.posTag)
+                {
+                    sentence.createChild(posTag).generateChildFromChunk();
+                }
+                
+                onHold = i + 1;
+            }
+        }
+
+        return root;
+    }
 }
 module.exports.Relation = Relation;
 
@@ -149,3 +182,7 @@ const lookBehind = (levelNode, desiredPOSType, findChunk, startIdx) => {
 
 module.exports.lookAhead = lookAhead;
 module.exports.lookBehind = lookBehind;
+
+const relationExtraction = () => {
+
+}
