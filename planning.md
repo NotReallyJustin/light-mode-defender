@@ -80,6 +80,14 @@ After making the relation nodes that act in hierarchal order, we describe things
 <img src="https://i.imgur.com/FwYDzb2.png" /> <br />
 <img src="https://i.imgur.com/1Sm0f2L.png" /> <br />
 
+## Methods
+Add some methods to save some time down the line. Ideas: <br />
+```
+1. A toString() that returns all the text belonging to the relation node (like sentence text that belongs)
+2. Please add createChild() method because it's such a pain to manually create and append a child node, and then you get into referencing problems
+3. findNoun(). Find the actual noun in a noun phrase because NPs come with a bunch of nonsense
+```
+
 ## Helpy functions
 It's kind of like RegExp but we're hardcoding it <br>
 Create a lookAhead() and lookBehind() function that will find a POS chunk or POS type (both represented by relation nodes) before or after the current relation node. These are stolen from Srs Bot Running before revamp<br>

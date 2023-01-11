@@ -78,6 +78,21 @@ class Relation
     }
 
     /**
+     * Read: "the node's children has a noun"
+     * @param {String} posType The POS type you're looking for
+     * @returns Whether any children in the POS chunk has the specified posType. If this doesn't have children, just return false.
+     */
+    childrenHas(posType)
+    {
+        if (!this.hasForcedPOS && this.isChunk)
+        {
+            return this.children.some(twoDPOS => new RegExp(posType, 'gmi').test(twoDPOS.pos));
+        }
+
+        return false;
+    }
+
+    /**
      * Find all nouns in this relation's children.
      * If the POS is forced, return [] because no matter what, you're not going to find an actual noun here
      * @return An 2D array of this relation's child nodes that are noun phrases. The 2D array is only here in case nouns are paired together
@@ -145,7 +160,7 @@ module.exports.Relation = Relation;
 /**
  * Implements a "RegExp" POS look ahead for the current level of relation nodes (nodes on the same level)
  * @param {Relation[]} levelNode An array of all relation nodes on the same level
- * @param {String} desiredPOSType Desired POS of relation node you're finding
+ * @param {String} desiredPOSType Desired POS of relation node you're finding. Use RegExp to find multiple.
  * @param {Boolean} findChunk Whether to look ahead for relation node that are chunks. If false, this will only look for relation nodes that aren't chunks
  * @param {Number} startIdx Index to start lookAhead at (Basically, the index of the current relation node in its current level)
  * @returns The first lookahead that works, or null if nothing matches
@@ -153,7 +168,7 @@ module.exports.Relation = Relation;
 const lookAhead = (levelNode, desiredPOSType, findChunk, startIdx) => {
 	for (var i = startIdx; i < levelNode.length; i++)
 	{
-		if (levelNode[i].pos == desiredPOSType && levelNode[i].isChunk == findChunk)
+		if (new RegExp(desiredPOSType, 'gmi').test(levelNode[i].pos) && levelNode[i].isChunk == findChunk)
 		{
 			return levelNode[i];
 		}
@@ -164,7 +179,7 @@ const lookAhead = (levelNode, desiredPOSType, findChunk, startIdx) => {
 /**
  * Implements a "RegExp" POS look behind for the current level of relation nodes (nodes on the same level)
  * @param {Relation[]} levelNode An array of all relation nodes on the same level
- * @param {String} desiredPOSType Desired POS of relation node you're finding
+ * @param {String} desiredPOSType Desired POS of relation node you're finding. Use RegExp to find multiple.
  * @param {Boolean} findChunk Whether to look behind for relation node that are chunks. If false, this will only look for relation nodes that aren't chunks
  * @param {Number} startIdx Index to start lookBehind at (Basically, the index of the current relation node in its current level)
  * @returns The first look behind that works, or null if nothing matches
@@ -172,7 +187,7 @@ const lookAhead = (levelNode, desiredPOSType, findChunk, startIdx) => {
 const lookBehind = (levelNode, desiredPOSType, findChunk, startIdx) => {
 	for (var i = startIdx; i >= 0; i--)
 	{
-		if (levelNode[i].pos == desiredPOSType && levelNode[i].isChunk == findChunk)
+		if (new RegExp(desiredPOSType, 'gmi').test(levelNode[i].pos) && levelNode[i].isChunk == findChunk)
 		{
 			return levelNode[i];
 		}
@@ -183,6 +198,160 @@ const lookBehind = (levelNode, desiredPOSType, findChunk, startIdx) => {
 module.exports.lookAhead = lookAhead;
 module.exports.lookBehind = lookBehind;
 
-const relationExtraction = () => {
+/**
+ * Extracts relations for all posChunks and their children.
+ * This does it by modifying Relation.proto.subject and Relation.proto.object.
+ * @param {Relation} rootRelation The root relation node.
+ */
+const relationExtraction = (rootRelation) => {
 
+    //Divide the relation extraction up by sentences
+    rootRelation.children.forEach(sentence => {
+        //Relation extract for each posChunk
+        sentence.children.forEach((posChunk, i) => {
+            //Relation extract it differently for each POS type
+            switch (posChunk.pos)
+            {
+                //See if we can also chunk this
+                case "NOUN":
+                    //First case: tackle if something goes like "the game is trash" where "game" and "trash" are both NPs
+
+                    //Look at everything before the current NP
+                    for (var c = i - 1, hasIs = false; c >= 0; c--)
+                    {
+                        //If the previous POS' are any of the ones below, then the noun is already an object of something and just skip it
+                        if (/COMPARISON|ADJECTIVE|\bVERB\b|PUNCTUATIONEND/gmi.test(sentence.children[c].pos))
+                        {
+                            break;
+                        }
+
+                        //If the previous words have "IS" or "become" or any of those words, then the noun is smth like "___ is ___." Then, this noun is referring to a subject
+                        if (sentence.children[c].pos.trim() == "IS" || /has|had|have|be|become|became/.test(sentence.children[c].toString())) hasIs = true;
+
+                        //Find that subject.
+                        if (hasIs && (sentence.children[c].pos == "NOUN" || sentence.children[c].pos == "PRONOUN"))
+                        {
+                            posChunk.subject = sentence.children[c];
+                            break;
+                        }
+                    }
+
+                    if (posChunk.isChunk)
+                    {
+                        //What this whole block does: Relation extraction all the children in the NP
+                        //To fix: adjective in NP that goes "not good"
+
+                        //For each posTag in the posChunk's children, relation extraction them
+                        var isChain = false;
+                        posChunk.children.forEach((posTag, idx) => {
+                            //Check to see if we're in an "is phrase" - AKA something like "the cat that IS happy, jumpy, and sad"
+                            if (posTag.pos == "IS" || /has|had|have|be|become|became/.test(posTag.toString())) isChain = true;
+
+                            if (posTag.pos == "ADJECTIVE")
+                            {
+                                //If is chain --> the dog IS bad
+                                //If not --> the bad dog
+                                posTag.subject = isChain ? lookBehind(posChunk.children, "NOUN", false, idx - 1) : lookAhead(posChunk.children, "NOUN", false, idx + 1);
+                            }
+                            else if (posTag.pos == "VERB")
+                            {
+                                //If we encounter a verb among the NP children, determine the subject and object of it by doing lookaheads and lookbehinds simultaneously
+                                    for (var c = idx - 1, d = idx + 1; c >= 0 || d < posChunk.children.length; c--, d++)
+                                    {
+                                        if (c >= 0 && /PRONOUN|NOUN|PNOUN/mi.test(posTag.pos))
+                                        {
+                                            if (isChain) //AXE was used by Justin
+                                            {
+                                                if (!posTag.object)
+                                                    posTag.object = posChunk.children[c];
+                                            }
+                                            else //JUSTIN used axe
+                                            {
+                                                if (!posTag.subject)
+                                                    posTag.subject = posChunk.children[c];
+                                            }
+                                        }
+                                        
+                                        if (d < posChunk.children.length && /PRONOUN|NOUN|PNOUN/mi.test(posTag.pos))
+                                        {
+                                            if (isChain) // axe was used by JUSTIN
+                                            {
+                                                if (!posTag.subject)
+                                                    posTag.subject = posChunk.children[d];
+                                            }
+                                            else //justin used AXE
+                                            {
+                                                if (!posTag.object)
+                                                    posTag.object = posChunk.children[d];
+                                            }
+                                        }
+                                    }
+                            } //If the POS is not a verb or adjective or any of the ones below, then it's definitively not in the isChain anymore
+                            else if (posTag.pos != "CONJUNCTION" && posTag.pos != "PUNCTUATION" && posTag.pos != "ADVERB")
+                            {
+                                //To do: smth like "the cat that was attacked by the dog and chases Jerry"
+                                //Running --> dog subject, cat object
+                                //Chases --> cat subject, dog object
+                                //Now where do we end the is chain?
+                                isChain = false;
+                            }
+                        });
+                    }
+                break;
+
+                case "COMPARISON":
+                    posChunk.subject = lookBehind(sentence.children, "NOUN|PNOUN|PRONOUN", true, i - 1);
+
+                    //If the comparison phrase has something similar to the words "than" (SCONJ) or "compared to"
+                    //To fix: because would also get chunked in here
+                    if (posChunk.childrenHas("SCONJ|VERB-COMP"))
+                    {
+                        posChunk.object = lookAhead(sentence.children, "NOUN|PNOUN|PRONOUN", true, i + 1);
+                    }
+                break;
+
+                case "VERB":
+                    //Praying to god rn that Gerunds and participles don't get classified as a verb (POSData.txt please do your job)
+                    var hasIs = false;
+				    var ing = false;
+
+                    //For each word in the Verb Phrase:
+                    posChunk.forEach((posTag, idx) => {
+                        //Check if the word in VP is an is phrase
+                        if (posTag.pos == "IS" || /get|gets|got|gotten/.test(posTag.toString()))
+                        {
+                            hasIs = true;
+                        }
+                        
+                        //Check if any verbs in the VP ends in -ing
+                        if (posTag.pos == "VERB" && posTag.toString().endsWith('ing'))
+                        {
+                            ing = true;
+                        }
+                    })
+                    
+                    //If verb phrase was smth like "OBJECT was attacked by SUBJECT"
+                    if (hasIs && !ing)
+                    {
+                        rel.subject = lookAhead(sentence, "NOUN", true, idx + 1);
+                        rel.object = lookBehind(sentence, "NOUN", true, idx - 1);
+                    }
+                    else //If verb phrase was smth like "SUBJECT was running from OBJECT" or "SUBJECT ran"
+                    {
+                        //To do: fix "SUBJECT ran quickly and SUBJECt2 also ran" --> make sure SUBJECT2 isn't marked as object
+                        //Can't chunk by conjunction because we want "SUBJECT ran, swam, AND jumped away from OBJECT" also conflicts with the AND
+                        rel.subject = lookBehind(sentence, "NOUN", true, idx - 1);
+                        rel.object = lookAhead(sentence, "NOUN", true, idx + 1);
+                    }
+                break;
+
+                case "ADJECTIVE ":
+                case "ADJECTIVE":
+                    //Adjectives that come before noun are in NP because *Light* in light mode is adj, but it's cruicial info to know the theme.
+                    //So we only have adjectives after NP
+                    rel.subject = lookBehind(sentence, "NOUN", true, idx - 1);
+                break;
+            }
+        })
+    });
 }

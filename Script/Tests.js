@@ -316,6 +316,9 @@ const testRelation = () => {
         if (relationTree.children[0].toString() != "the cat in las vegas") throw "Relation doesn't have right toString for POS Chunks";
         if (relationTree.children[0].children[0].toString() != "the") throw "Relation doesn't have right toString for child of POS chunks";
 
+        if (!relationTree.children[0].childrenHas("PNOUN")) return "Children has doesn't work";
+        if (relationTree.children[0].childrenHas("SCONJ")) return "Children has doesn't work";
+
         var findNoun = relationTree.children[0].findNoun();
         if (findNoun.length != 2) return "Relation findNoun does not give the right number of nouns";
         if (findNoun[0].length != 1) return "Relation findNoun's array isn't structured properly for a word";
@@ -395,6 +398,9 @@ const testRelationFromPOSArr = () => {
         if (sentenceOne.children[1].toString() != "sat") throw "Relation doesn't have right toString for POS Arrays";
         if (sentenceOne.children[0].toString() != "the cat in las vegas") throw "Relation doesn't have right toString for POS Chunks";
         if (sentenceOne.children[0].children[0].toString() != "the") throw "Relation doesn't have right toString for child of POS chunks";
+
+        if (!sentenceOne.childrenHas("PNOUN")) return "Children has doesn't work";
+        if (sentenceOne.childrenHas("SCONJ")) return "Children has doesn't work";
 
         var findNoun = sentenceOne.children[0].findNoun();
         if (findNoun.length != 2) return "Relation findNoun does not give the right number of nouns";
