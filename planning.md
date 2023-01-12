@@ -137,6 +137,36 @@ Missing part --> Deal with "had run from"
 1. Link [NOUN/PRONOUN/PNOUN as subject] [comparison phrase] [NOUN/PRONOUN/PNOUN as object if there's something like "compared to (VERB-COMP)" or "than" (SCONJ) in the comp phrase]
 ie. "a is better than b"
 ```
+<br> <br>
+
+**For Adjective Phrases** <br>
+```
+1. Link [NOUN/PRONOUN/PNOUN] [adjective phrase]		--> ie. The cat is bad
+``` 
+<br>
+This works because any [adjective phrase] [NP] gets chunked as a noun phrase
+<br><br>
+
+**For Adverb Phrases** <br>
+```
+1. Start from the current index (that contains the adverb). Then go to the right and left at the same time to find the closest verb
+2. Once you find the closest verb, link [VERB] [adverb phrase] or [adverb phrase] [VERB]
+3. However, if you encounter a punctuation without a conjunction when you're moving left, stop. That's a different verb the adverb doesn't affect (ie. slept well, QUICKLY)
+4. If you encounter a verb on the right that has a punctuation without a conjunction, stop. (ie. QUICKLY, slept well) vs (ie. QUICKLY, quitely, and sneakily crawled)
+```
+<br><br>
+
+**For Noun Phrases** <br>
+```
+1. Look at the children in the noun phrase. Look through every word in there because shit is related
+2. Look behind for NOUNs and IS. If you see a second noun or pronoun while also seeing "IS", link [SECOND NOUN] [first noun as subject of second noun]. As a shortcut, if you see /COMPARISON|ADJECTIVE|\bVERB\b|PUNCTUATIONEND/gmi, this means the current noun is not going to be a metaphor for another word. Break; the search
+3. IMMEDIATELY determine whether something is in an is-chain (basically, "that IS __________" or "that HAD _______" or " that WAS ________"). The IS CHAIN ends when the current POS is not an adjective, verb, conjunction, punctuation, or adverb (comparisons aren't chunked as NPs so don't worry about that IS BETTER THAN _______)
+4. Rel extract the adjectives. If you're in an is-chain, look behind. Or else, look ahead.
+5. Rel extract the verbs. Fortunately, since you're in a noun-phrase, the verbs only serve to describe the subject and object of that noun phrase. Start at the current index and look forward & backward at the same time until you can link [NOUN] [verb] or [verb] [NOUN]. If you're in an isChain (ie. axe was used by Justin), link [NOUN as object] [verb] [NOUN as subject]. If not (ie. Justin used axe), link [NOUN as subject] [verb] [NOUN as object]
+```
+<br>
+The logic behind the is-chain is that the only time you'll see an is chain is when you have a pronoun that substitutes the main noun subject. <br>
+Basically, when you have "that" as the main subject and you need to use "that __" (the is-chain) to describe it
 
 # 4) Pronoun Anaphora
 
