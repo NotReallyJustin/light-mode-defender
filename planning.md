@@ -117,6 +117,27 @@ const lookBehind = (levelNode, desiredPOSType, findChunk, startIdx) => {
 }
 ``` 
 
+## Relation Extraction Rules
+The item to relate to will be in all caps <br><br>
+**For Verb Phrases**: <br>
+```
+1. Determine if the verb phrase like "is running" or "is ___ing"
+2. If they are, link [NOUN/PNOUN/PRONOUN as subject] [verb phrase] [NOUN/PRONOUN/PNOUN as object if they exist]		--> ie. "She is running from the dog"
+3. Determine if the verb phrase is like "was ran over by" or "has been bonked by"
+4. If they are, link [NOUN/PNOUN/PRONOUN as object if they exist] [verb phrase] [NOUN/PRONOUN/PNOUN as subject]		--> ie. "She was ran over by a car"
+5. If the verb phrase has neither, it's just a regular word. 
+6. Link [NOUN/PNOUN/PRONOUN as subject] [verb phrase] [NOUN/PRONOUN/PNOUN as object if they exist]		--> ie. "She ran from the dog"
+
+Missing part --> Deal with "had run from"
+``` 
+<br> <br>
+
+**For Comparison Phrases**: <br>
+```
+1. Link [NOUN/PRONOUN/PNOUN as subject] [comparison phrase] [NOUN/PRONOUN/PNOUN as object if there's something like "compared to (VERB-COMP)" or "than" (SCONJ) in the comp phrase]
+ie. "a is better than b"
+```
+
 # 4) Pronoun Anaphora
 
 # 5) Find which NOUN PHRASEs mention light mode

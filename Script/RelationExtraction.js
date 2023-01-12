@@ -360,26 +360,29 @@ const relationExtraction = (rootRelation) => {
                     var alertright = false; //Remembers to check conjright before deciding on verb
 
                     //Checks for commmas and acts
-                    for (var c = idx, d = idx; c >= 0 || d < sentence.children.length; c++, d--)
+                    for (var c = idx, d = idx; c >= 0 || d < sentence.children.length; c--, d++)
                     {
+                        //If you find a verb in front of the ADVERB, that gets tagged
                         if (c >= 0 && sentence.children[c].pos == "VERB")
                         {
                             posChunk.subject = sentence.children[c];
                             break;
-                        }
+                        } //If you find a verb after the ADVERB...
                         else if (d < sentence.children.length && sentence.children[d].pos == "VERB")
                         {
+                            //If there's no punctuation, tag the verb. ie. "quickly ran"
+                            //If there is a punctuation and a conjunction, it's fine. tag the verb. "quickly, hurrily, and sleepily ran"
                             if ((alertright && conjright) || !alertright)
                             {
                                 posChunk.subject = sentence.children[d];
                                 break;
                             }
-                            else
+                            else //If not, that verb doesn't belong to the ADVERB so just stop searching. ie. "quickly, slept well"
                             {
                                 d = sentence.children.length;
                             }
                         }
-                        else if (c >= 0 && sentence.children[c].pos == "CONJUNCTION")
+                        else if (c >= 0 && sentence.children[c].pos == "CONJUNCTION") //Detect conjunctions on left and right
                         {
                             conjleft = true;
                         }
@@ -389,10 +392,13 @@ const relationExtraction = (rootRelation) => {
                         }
                         else if (c >= 0 && sentence.children[c].pos == "PUNCTUATION" && !conjleft)
                         {
-                            i = -1;
+                            //If you see something like "[random] ran, quickly", that quickly does not belong to the ran. So stop searching.
+                            //If you see something like "ran [random], [random], and quickly", that quickly belongs to the ran
+                            c = -1;
                         }
                         else if (d < sentence.children.length && sentence.children[c].pos == "PUNCTUATION")
                         {
+                            //Alerts when there's a punctuation
                             alertright = true;
                         }
                     }
@@ -401,3 +407,5 @@ const relationExtraction = (rootRelation) => {
         })
     });
 }
+
+module.exports.relationExtraction = relationExtraction;
