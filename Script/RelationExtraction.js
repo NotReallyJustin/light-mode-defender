@@ -351,6 +351,52 @@ const relationExtraction = (rootRelation) => {
                     //So we only have adjectives after NP
                     rel.subject = lookBehind(sentence, "NOUN", true, idx - 1);
                 break;
+
+                case "ADVERB":
+                    //Find closest verb to modify (praying SAT grammar prep helps here)
+                    //Adverbs like very should already be classified in the adjectives
+                    var conjleft = false;
+                    var conjright = false;
+                    var alertright = false; //Remembers to check conjright before deciding on verb
+
+                    //Checks for commmas and acts
+                    for (var c = idx, d = idx; c >= 0 || d < sentence.children.length; c++, d--)
+                    {
+                        if (c >= 0 && sentence.children[c].pos == "VERB")
+                        {
+                            posChunk.subject = sentence.children[c];
+                            break;
+                        }
+                        else if (d < sentence.children.length && sentence.children[d].pos == "VERB")
+                        {
+                            if ((alertright && conjright) || !alertright)
+                            {
+                                posChunk.subject = sentence.children[d];
+                                break;
+                            }
+                            else
+                            {
+                                d = sentence.children.length;
+                            }
+                        }
+                        else if (c >= 0 && sentence.children[c].pos == "CONJUNCTION")
+                        {
+                            conjleft = true;
+                        }
+                        else if (d < sentence.children.length && sentence.children[c].pos == "CONJUNCTION")
+                        {
+                            conjright = true;
+                        }
+                        else if (c >= 0 && sentence.children[c].pos == "PUNCTUATION" && !conjleft)
+                        {
+                            i = -1;
+                        }
+                        else if (d < sentence.children.length && sentence.children[c].pos == "PUNCTUATION")
+                        {
+                            alertright = true;
+                        }
+                    }
+                break;
             }
         })
     });
