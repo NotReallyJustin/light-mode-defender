@@ -151,7 +151,8 @@ This works because any [adjective phrase] [NP] gets chunked as a noun phrase
 ```
 1. Start from the current index (that contains the adverb). Then go to the right and left at the same time to find the closest verb
 2. Once you find the closest verb, link [VERB] [adverb phrase] or [adverb phrase] [VERB]
-3. However, if you encounter a punctuation without a conjunction when you're moving left, stop. That's a different verb the adverb doesn't affect (ie. slept well, QUICKLY)
+3. However, if you encounter a punctuation without a conjunction when you're moving left, stop. That's a different verb the adverb doesn't affect (ie. slept well, QUICKLY). 
+	The exception to this is if the pos before the punctuation is also an ADVERB, in which case you have an adverb chain (ie. ran quickly, SWIFTLY, and quietly)
 4. If you encounter a verb on the right that has a punctuation without a conjunction, stop. (ie. QUICKLY, slept well) vs (ie. QUICKLY, quitely, and sneakily crawled)
 ```
 <br><br>

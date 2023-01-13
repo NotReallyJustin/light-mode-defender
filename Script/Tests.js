@@ -518,6 +518,99 @@ const testLookBehind = () => {
 }
 
 /**
+ * Creates a fake sentence to test whether RelationExtraction.relationExtraction() works.
+ * This is an integration test that requires lookAhead(), lookBehind(), and Relation class to all work properly. See previous tests.
+ * @returns Whether relation extraction function works.
+ */
+const testRelationExtraction = () => {
+    const root = RelationExtraction.Relation.buildFromPOSArr([
+        [
+            ["The", "DETERMINER", 0, "NOUN"],
+            ["cat", "NOUN", 1, "NOUN"] //s1np0
+        ],
+        [
+            ["sat", "VERB", 0, "VERB"] //s1vp0
+        ],
+        ["happily", "ADVERB"],
+        [",", "PUNCTUATION"],
+        ["sleepily", "ADVERB"],
+        [",", "PUNCTUATION"],
+        ["and", "CONJUNCTION"],
+        ["tiredly", "ADVERB"],
+        ["on", "ADPOSITION"],
+        ["the", "DETERMINER"],
+        [
+            ["bed", "NOUN", 0, "NOUN"] //s1np1
+        ],
+        [".", "PUNCTUATIONEND"],
+        [
+            ["The", "DETERMINER", 0, "NOUN"], //s2np0
+            ["cat", "NOUN", 1, "NOUN"],
+            ["that", "SCONJ", 2, "NOUN"],
+            ["is", "IS", 3, "NOUN"],
+            ["tired", "ADJECTIVE", 4, "NOUN"]
+        ],
+        [
+            ["is", "IS", 0, "COMPARISON"], //s2cp0
+            ["better", "COMPARISON", 1, "COMPARISON"],
+            ["than", "SCONJ", 2, "COMPARISON"]
+        ],
+        [
+            ["the", "DETERMINER", 0, "NOUN"], //s2np1
+            ["sleepy", "ADJECTIVE", 1, "NOUN"],
+            [",", "PUNCTUATION", 2, "NOUN"],
+            ["barking", "ADJECTIVE", 3, "NOUN"],
+            ["dog", "NOUN", 4, "NOUN"],
+            ["that", "SCONJ", 5, "NOUN"],
+            ["was", "IS", 6, "NOUN"],
+            ["attacked", "VERB", 7, "NOUN"],
+            ["by", "ADPOSITION", 8, "NOUN"],
+            ["a", "DETERMINER", 9, "NOUN"],
+            ["bus", "PRONOUN", 10, "NOUN"]
+        ]
+    ]);
+
+    const sentence1 = root.children[0];
+    const sentence2 = root.children[1];
+    const s1np0 = sentence1.children[0]; //Read: sentence 1 noun phrase 0
+    const s1vp0 = sentence1.children[1];
+    const s1np1 = sentence1.children[10];
+    const s2np0 = sentence2.children[0];
+    const s2cp0 = sentence2.children[1];
+    const s2np1 = sentence2.children[2];
+
+    RelationExtraction.relationExtraction(root);
+    try
+    {
+        if (sentence1.children.length != 12) throw "Relation extraction tree for sentence 1 doesn't chunk sentences properly";
+        if (sentence2.children.length != 3) throw "Relation extraction tree for sentence 2 doesn't chunk sentences properly";
+
+        if (s1vp0.subject != s1np0) throw "Relation extraction on VPs don't identify subjects correctly";
+        if (s1vp0.object != s1np1) throw "Relation extraction on VPs don't identify objects correctly after a ton of adverbs and conjunctions";
+        if (sentence1.children[2].subject != s1vp0) throw "Relation extraction on adverbs don't identify a verb subjecy right next to it";
+        if (sentence1.children[4].subject != s1vp0) throw "Relation extraction on adverbs don't identify a verb subject muddled by commas";
+        if (sentence1.children[7].subject != s1vp0) throw "Relation extraction on adverbs don't identify a verb subject muddled by commas and conjunctions";
+
+        if (s2cp0.subject != s2np0) throw "Relation extraction on comparisons doesn't identify subjects correctly";
+        if (s2cp0.object != s2np1) throw "Relation extraction on comparisons doesn't identify objects correctly";
+
+        if (s2np0.children[4].subject != s2np0.children[1]) throw "Relation extraction in NPs for adjectives in is-chain doesn't work properly";
+
+        if (s2np1.children[1].subject != s2np1.children[4]) throw "Relation extraction in NPs for adjectives not in is-chain doesn't work properly amidst commas and ANDs";
+        if (s2np1.children[3].subject != s2np1.children[4]) throw "Relation extraction in NPs for adjectives not in is-chain doesn't work properly without commas and ANDs";
+        if (s2np1.children[7].object != s2np1.children[4]) throw "Relation extraction in NPs for verbs in is-chain doesn't identify objects properly"
+        if (s2np1.children[7].subject != s2np1.children[10]) throw "Relation extraction in NPs for verbs in is-chain doesn't identify subjects properly";
+    }
+    catch(err)
+    {
+        console.log(`> testLookBehind failed: ${err}`);
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
@@ -534,7 +627,8 @@ module.exports.runTests = async () => {
         testRelation,
         testRelationFromPOSArr,
         testLookAhead,
-        testLookBehind
+        testLookBehind,
+        testRelationExtraction
     ];
     
     for (test of toTest)

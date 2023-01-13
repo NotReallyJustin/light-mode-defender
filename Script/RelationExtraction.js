@@ -245,9 +245,11 @@ const relationExtraction = (rootRelation) => {
                         var isChain = false;
                         posChunk.children.forEach((posTag, idx) => {
                             //Check to see if we're in an "is phrase" - AKA something like "the cat that IS happy, jumpy, and sad"
-                            if (posTag.pos == "IS" || /has|had|have|be|become|became/.test(posTag.toString())) isChain = true;
-
-                            if (posTag.pos == "ADJECTIVE")
+                            if (posTag.pos == "IS" || /has|had|have|be|become|became/.test(posTag.toString())) 
+                            {
+                                isChain = true;
+                            }
+                            else if (posTag.pos == "ADJECTIVE")
                             {
                                 //If is chain --> the dog IS bad
                                 //If not --> the bad dog
@@ -258,7 +260,7 @@ const relationExtraction = (rootRelation) => {
                                 //If we encounter a verb among the NP children, determine the subject and object of it by doing lookaheads and lookbehinds simultaneously
                                     for (var c = idx - 1, d = idx + 1; c >= 0 || d < posChunk.children.length; c--, d++)
                                     {
-                                        if (c >= 0 && /PRONOUN|NOUN|PNOUN/mi.test(posTag.pos))
+                                        if (c >= 0 && /PRONOUN|NOUN|PNOUN/mi.test(posChunk.children[c].pos))
                                         {
                                             if (isChain) //AXE was used by Justin
                                             {
@@ -272,7 +274,7 @@ const relationExtraction = (rootRelation) => {
                                             }
                                         }
                                         
-                                        if (d < posChunk.children.length && /PRONOUN|NOUN|PNOUN/mi.test(posTag.pos))
+                                        if (d < posChunk.children.length && /PRONOUN|NOUN|PNOUN/mi.test(posChunk.children[d].pos))
                                         {
                                             if (isChain) // axe was used by JUSTIN
                                             {
@@ -316,7 +318,7 @@ const relationExtraction = (rootRelation) => {
 				    var ing = false;
 
                     //For each word in the Verb Phrase:
-                    posChunk.forEach((posTag, idx) => {
+                    posChunk.children.forEach((posTag, idx) => {
                         //Check if the word in VP is an is phrase
                         if (posTag.pos == "IS" || /get|gets|got|gotten/.test(posTag.toString()))
                         {
@@ -333,15 +335,15 @@ const relationExtraction = (rootRelation) => {
                     //If verb phrase was smth like "OBJECT was attacked by SUBJECT"
                     if (hasIs && !ing)
                     {
-                        rel.subject = lookAhead(sentence, "NOUN", true, idx + 1);
-                        rel.object = lookBehind(sentence, "NOUN", true, idx - 1);
+                        posChunk.subject = lookAhead(sentence.children, "NOUN", true, i + 1);
+                        posChunk.object = lookBehind(sentence.children, "NOUN", true, i - 1);
                     }
                     else //If verb phrase was smth like "SUBJECT was running from OBJECT" or "SUBJECT ran"
                     {
                         //To do: fix "SUBJECT ran quickly and SUBJECt2 also ran" --> make sure SUBJECT2 isn't marked as object
                         //Can't chunk by conjunction because we want "SUBJECT ran, swam, AND jumped away from OBJECT" also conflicts with the AND
-                        rel.subject = lookBehind(sentence, "NOUN", true, idx - 1);
-                        rel.object = lookAhead(sentence, "NOUN", true, idx + 1);
+                        posChunk.subject = lookBehind(sentence.children, "NOUN", true, i - 1);
+                        posChunk.object = lookAhead(sentence.children, "NOUN", true, i + 1);
                     }
                 break;
 
@@ -349,7 +351,7 @@ const relationExtraction = (rootRelation) => {
                 case "ADJECTIVE":
                     //Adjectives that come before noun are in NP because *Light* in light mode is adj, but it's cruicial info to know the theme.
                     //So we only have adjectives after NP
-                    rel.subject = lookBehind(sentence, "NOUN", true, idx - 1);
+                    rel.subject = lookBehind(sentence.children, "NOUN", true, idx - 1);
                 break;
 
                 case "ADVERB":
@@ -360,7 +362,7 @@ const relationExtraction = (rootRelation) => {
                     var alertright = false; //Remembers to check conjright before deciding on verb
 
                     //Checks for commmas and acts
-                    for (var c = idx, d = idx; c >= 0 || d < sentence.children.length; c--, d++)
+                    for (var c = i, d = i; c >= 0 || d < sentence.children.length; c--, d++)
                     {
                         //If you find a verb in front of the ADVERB, that gets tagged
                         if (c >= 0 && sentence.children[c].pos == "VERB")
@@ -386,17 +388,20 @@ const relationExtraction = (rootRelation) => {
                         {
                             conjleft = true;
                         }
-                        else if (d < sentence.children.length && sentence.children[c].pos == "CONJUNCTION")
+                        else if (d < sentence.children.length && sentence.children[d].pos == "CONJUNCTION")
                         {
                             conjright = true;
                         }
-                        else if (c >= 0 && sentence.children[c].pos == "PUNCTUATION" && !conjleft)
+                        else if (c >= 1 && sentence.children[c].pos == "PUNCTUATION" && !conjleft && sentence.children[c - 1].pos != "ADVERB")
                         {
                             //If you see something like "[random] ran, quickly", that quickly does not belong to the ran. So stop searching.
                             //If you see something like "ran [random], [random], and quickly", that quickly belongs to the ran
+
+                            //Likewise if you see "ran [random], quickly, and [random]", that still belongs to ran even though the comma 
+                            //before quickly didn't have a conjunction since [random] in front of conjunction is an adverb
                             c = -1;
                         }
-                        else if (d < sentence.children.length && sentence.children[c].pos == "PUNCTUATION")
+                        else if (d < sentence.children.length && sentence.children[d].pos == "PUNCTUATION")
                         {
                             //Alerts when there's a punctuation
                             alertright = true;
