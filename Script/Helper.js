@@ -2,6 +2,33 @@
     Le helper functions go here
 */
 
+/**
+ * Your run off the mill binary search
+ * @param {Object[]} arr The array you're searching from
+ * @param {Object} item Anything you're searching for
+ * @returns The index of the item in the array. Returns -1 if not found.
+ */
+module.exports.binarySearch = (arr, item) => {
+    var found = -1;
+    for (var left = 0, right = arr.length, middle = Math.floor(arr.length / 2); left <= right; middle = Math.floor((left + right) /2))
+    {
+        if (arr[middle] < item)
+        {
+            left = middle + 1;
+        }
+        else if (arr[middle] > item)
+        {
+            right = middle - 1;
+        }
+        else if (arr[middle] == item)
+        {
+            found = middle;
+            break;
+        }
+    }
+    return found;
+};
+
 module.exports.CountingTable = class {
     /**
         * Class that creates a counting table of all the different occurances of something
@@ -123,4 +150,122 @@ module.exports.cleanseContractions = (sentence) => {
 	}
 
 	return sentence;
+}
+
+//Adapted version of kuwamoto's pluralize algorithm
+String.plural = {
+    '(quiz)$'               : "$1zes",
+    '^(ox)$'                : "$1en",
+    '([m|l])ouse$'          : "$1ice",
+    '(matr|vert|ind)ix|ex$' : "$1ices",
+    '(x|ch|ss|sh)$'         : "$1es",
+    '([^aeiouy]|qu)y$'      : "$1ies",
+    '(hive)$'               : "$1s",
+    '(?:([^f])fe|([lr])f)$' : "$1$2ves",
+    '(shea|lea|loa|thie)f$' : "$1ves",
+    'sis$'                  : "ses",
+    '([ti])um$'             : "$1a",
+    '(tomat|potat|ech|her|vet)o$': "$1oes",
+    '(bu)s$'                : "$1ses",
+    '(alias)$'              : "$1es",
+    '(octop)us$'            : "$1i",
+    '(ax|test)is$'          : "$1es",
+    '(us)$'                 : "$1es",
+    '([^s]+)$'              : "$1s"
+};
+
+String.singular = {
+    '(quiz)zes$'             : "$1",
+    '(matr)ices$'            : "$1ix",
+    '(vert|ind)ices$'        : "$1ex",
+    '^(ox)en$'               : "$1",
+    '(alias)es$'             : "$1",
+    '(octop|vir)i$'          : "$1us",
+    '(cris|ax|test)es$'      : "$1is",
+    '(shoe)s$'               : "$1",
+    '(o)es$'                 : "$1",
+    '(bus)es$'               : "$1",
+    '([m|l])ice$'            : "$1ouse",
+    '(x|ch|ss|sh)es$'        : "$1",
+    '(m)ovies$'              : "$1ovie",
+    '(s)eries$'              : "$1eries",
+    '([^aeiouy]|qu)ies$'     : "$1y",
+    '([lr])ves$'             : "$1f",
+    '(tive)s$'               : "$1",
+    '(hive)s$'               : "$1",
+    '(li|wi|kni)ves$'        : "$1fe",
+    '(shea|loa|lea|thie)ves$': "$1f",
+    '(^analy)ses$'           : "$1sis",
+    '((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$': "$1$2sis",        
+    '([ti])a$'               : "$1um",
+    '(n)ews$'                : "$1ews",
+    '(h|bl)ouses$'           : "$1ouse",
+    '(corpse)s$'             : "$1",
+    '(us)es$'                : "$1",
+    's$'                     : ""
+};
+
+String.uncountable = ['furniture', 'information', 'knowledge', 'jewelry', 'homework', 'marketing', 'livestock', 'education', 'courage', 'bravery', 'luck', 'cowardice', 'greed', 'clarity', 'honesty', 'evidence', 'insurance', 'butter', 'love', 'news', 'curiosity', 'satisfaction', 'work', 'mud', 'weather', 'racism', 'sexism', 'patriotism', 'chaos', 'scenery', 'help', 'advice', 'water', 'fun', 'wisdom', 'silence', 'sugar', 'coal', 'money', 'spelling'];
+module.exports.uncountable = String.uncountable;
+
+String.irregularPlurals = require("../Data/irregularPlurals.json");
+
+/**
+ * Does a binary search to find the singular/plural form of the irregular plural noun. Anyways, don't touch this function unless it's in pluralize
+ * @param {String} item Word you're finding
+ * @param {Boolean} revert Set to true if you want plural --> singular. By default, it's false. 
+ * @returns Empty string if there's no match. If there is, return the singular/plural form of the irregular plural noun
+ */
+const searchIrregular = (item, revert) => {
+    item = item.toLowerCase();
+
+    const arr = revert ? Object.values(String.irregularPlurals) : Object.keys(String.irregularPlurals); //The before
+    const toTransformInto = revert ? Object.keys(String.irregularPlurals) : Object.values(String.irregularPlurals); //The after
+
+    var found = this.binarySearch(arr, item);
+
+    if (found == -1)
+    {
+        return "";
+    }
+    
+    return toTransformInto[found];
+}
+
+/**
+ * Either makes a singular word plural or plural word singular.
+ * @param {String} word The word to pluralize or singularize
+ * @param {Boolean} revert Do you want to plural --> singular. By default, it's false 
+ * @returns Welp kinda self explanatory.
+ */
+module.exports.pluralize = (word, revert=false) => {
+    word = word.toLowerCase();
+
+    if (/\W/gmi.test(word))
+    {
+        console.error("Pluralize only works for one word");
+        return "";  
+    }
+
+    //If the word is uncountable, just return it as default.
+    if (String.uncountable.indexOf(word) != -1)
+    {
+        return word;
+    }
+
+    //if the word has an irregular plural, return that irregular plural
+    var irregularPlural = searchIrregular(word, revert);
+    if (irregularPlural) return irregularPlural;
+    
+    //Now, apply the pluralize/singularize rules. Depending on revert, we apply different transformation rules.
+    const transformation = revert ? String.singular : String.plural;
+
+    for (var regExpString in transformation)
+    {
+        var pattern = new RegExp(regExpString, "i");
+        if (pattern.test(word)) return word.replace(pattern, transformation[regExpString]);
+    }
+
+    //Last resort, return word
+    return word;
 }

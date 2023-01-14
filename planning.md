@@ -250,7 +250,7 @@ When you propse one of these, make sure the gender (or lack of gender in case of
 **Determine Number Match**<br>
 ```
 1. Run the findNoun method in Relation on the antecedent. If it returns 0 nouns, return false because it's impossible.
-2. If the antecedent has 2+ nouns and pronoun is plural, we good.
+2. If the antecedent has 2+ nouns and pronoun is plural, we good. If not, we bad.
 3. If the antecedent has only 1 noun, determine whether that noun is plural:
 	3a. If that noun cannot be made singular/plural (ie. the plural of sheep is still sheep) - we good with number match. Read more here: https://www.englishlci.edu/blog/english-grammar-lessons/did-you-know-that-these-words-have-no-plural/#:~:text=The%20words%20%E2%80%9Cmoose%2C%E2%80%9D%20%E2%80%9C,The%20moose%20is%2Fare%20migrating.
 	3b. Put the noun under a plural --> singular noun translator. If the noun before and after the translator are the same, that means the noun is singular. If the noun turned out to have changed, then it's a plural noun.
