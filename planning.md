@@ -170,6 +170,108 @@ The logic behind the is-chain is that the only time you'll see an is chain is wh
 Basically, when you have "that" as the main subject and you need to use "that __" (the is-chain) to describe it
 
 # 4) Pronoun Anaphora
+## Some Tools
+**JSON data of pronouns:** <br>
+```json
+{"he":{"plural":false,"gender":"m","reflexive":false},"him":{"plural":false,"gender":"m","reflexive":false},"his":{"plural":false,"gender":"m","reflexive":false},"himself":{"plural":false,"gender":"m","reflexive":true},"she":{"plural":false,"gender":"f","reflexive":false},"her":{"plural":false,"gender":"f","reflexive":false},"hers":{"plural":false,"gender":"f","reflexive":false},"herself":{"plural":false,"gender":"f","reflexive":true},"it":{"plural":false,"gender":"n","reflexive":false},"its":{"plural":false,"gender":"n","reflexive":false},"zim":{"plural":false,"gender":"n","reflexive":false},"zie":{"plural":false,"gender":"n","reflexive":false},"zir":{"plural":false,"gender":"n","reflexive":false},"zis":{"plural":false,"gender":"n","reflexive":false},"zieself":{"plural":false,"gender":"n","reflexive":true},"they":{"plural":true,"gender":"n","reflexive":false},"them":{"plural":true,"gender":"n","reflexive":false},"their":{"plural":true,"gender":"n","reflexive":false},"theirs":{"plural":true,"gender":"n","reflexive":false},"themselves":{"plural":true,"gender":"n","reflexive":true},"themself":{"plural":false,"gender":"n","reflexive":true},"I":{"plural":false,"gender":"n","reflexive":false},"my":{"plural":false,"gender":"n","reflexive":false},"mine":{"plural":false,"gender":"n","reflexive":false},"mines":{"plural":false,"gender":"n","reflexive":false},"myself":{"plural":false,"gender":"n","reflexive":true},"you":{"plural":false,"gender":"n","reflexive":false},"your":{"plural":false,"gender":"n","reflexive":false},"yours":{"plural":false,"gender":"n","reflexive":false},"yourself":{"plural":false,"gender":"n","reflexive":true},"yourselves":{"plural":true,"gender":"n","reflexive":true}}
+```
+<br> <br>
+
+**Pluralize/Singularize RegExp:** <br>
+```js
+//Adapted version of kuwamoto's pluralize algorithm
+plural = {
+    '(quiz)$'               : "$1zes",
+    '^(ox)$'                : "$1en",
+    '([m|l])ouse$'          : "$1ice",
+    '(matr|vert|ind)ix|ex$' : "$1ices",
+    '(x|ch|ss|sh)$'         : "$1es",
+    '([^aeiouy]|qu)y$'      : "$1ies",
+    '(hive)$'               : "$1s",
+    '(?:([^f])fe|([lr])f)$' : "$1$2ves",
+    '(shea|lea|loa|thie)f$' : "$1ves",
+    'sis$'                  : "ses",
+    '([ti])um$'             : "$1a",
+    '(tomat|potat|ech|her|vet)o$': "$1oes",
+    '(bu)s$'                : "$1ses",
+    '(alias)$'              : "$1es",
+    '(octop)us$'            : "$1i",
+    '(ax|test)is$'          : "$1es",
+    '(us)$'                 : "$1es",
+    '([^s]+)$'              : "$1s"
+};
+
+singular = {
+    '(quiz)zes$'             : "$1",
+    '(matr)ices$'            : "$1ix",
+    '(vert|ind)ices$'        : "$1ex",
+    '^(ox)en$'               : "$1",
+    '(alias)es$'             : "$1",
+    '(octop|vir)i$'          : "$1us",
+    '(cris|ax|test)es$'      : "$1is",
+    '(shoe)s$'               : "$1",
+    '(o)es$'                 : "$1",
+    '(bus)es$'               : "$1",
+    '([m|l])ice$'            : "$1ouse",
+    '(x|ch|ss|sh)es$'        : "$1",
+    '(m)ovies$'              : "$1ovie",
+    '(s)eries$'              : "$1eries",
+    '([^aeiouy]|qu)ies$'     : "$1y",
+    '([lr])ves$'             : "$1f",
+    '(tive)s$'               : "$1",
+    '(hive)s$'               : "$1",
+    '(li|wi|kni)ves$'        : "$1fe",
+    '(shea|loa|lea|thie)ves$': "$1f",
+    '(^analy)ses$'           : "$1sis",
+    '((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$': "$1$2sis",        
+    '([ti])a$'               : "$1um",
+    '(n)ews$'                : "$1ews",
+    '(h|bl)ouses$'           : "$1ouse",
+    '(corpse)s$'             : "$1",
+    '(us)es$'                : "$1",
+    's$'                     : ""
+};
+``` 
+<br>
+
+Note that we modified the original pluralize algorithm because it was leaving out "e"s and other unholy British stuff <br>
+How to use: <br>
+```
+1. Make a list of uncountable words. Ignore those that come into the pluralize algorithm.
+2. Make a list of irregular verbs. Map them 1 --> 1 as they come in.
+3. If the conditions on the left match for single and plural JSON, replace it with the right
+	(A note here: $1 == first [and only in these arrays] capturing group)
+```
+
+## Proposing Antecedents
+Basically, given a pronoun and an antecedent (noun phrase), return whether the pronoun could represent the antecedent <br>
+When you propse one of these, make sure the gender (or lack of gender in case of things like tables), reflexive, and numbers match <br><br>
+
+**Determine Number Match**<br>
+```
+1. Run the findNoun method in Relation on the antecedent. If it returns 0 nouns, return false because it's impossible.
+2. If the antecedent has 2+ nouns and pronoun is plural, we good.
+3. If the antecedent has only 1 noun, determine whether that noun is plural:
+	3a. If that noun cannot be made singular/plural (ie. the plural of sheep is still sheep) - we good with number match. Read more here: https://www.englishlci.edu/blog/english-grammar-lessons/did-you-know-that-these-words-have-no-plural/#:~:text=The%20words%20%E2%80%9Cmoose%2C%E2%80%9D%20%E2%80%9C,The%20moose%20is%2Fare%20migrating.
+	3b. Put the noun under a plural --> singular noun translator. If the noun before and after the translator are the same, that means the noun is singular. If the noun turned out to have changed, then it's a plural noun.
+```
+<br> <br>
+
+**Determine Gender Match** <br>
+```
+1. If the antecedent is plural, completely ignore this step because English doesn't do something like ellOs/ellAs
+2. If the antecedent is singular, check if you have a PNOUN.
+3. If you have a PNOUN, check to see if it's in boyNames.txt or girlNames.txt to confirm the gender.
+4. If you don't have a PNOUN, check all the ways you can refer to women and all the ways you can refer to men. See if the noun contains any of those words for gender.
+5. Make sure the gender matches
+```
+<br><br>
+
+**Determine Reflexive Match** <br>
+```
+1. If the pronoun and antecedent are both in the same sentence, it could be reflexive.
+2. Yea pronoun might be ambigious in that case but it's their fault in tha case
+```
 
 # 5) Find which NOUN PHRASEs mention light mode
 
