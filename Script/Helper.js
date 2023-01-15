@@ -10,7 +10,7 @@
  */
 module.exports.binarySearch = (arr, item) => {
     var found = -1;
-    for (var left = 0, right = arr.length, middle = Math.floor(arr.length / 2); left <= right; middle = Math.floor((left + right) /2))
+    for (var left = 0, right = arr.length - 1, middle = Math.floor(arr.length / 2); left <= right && left >= 0 && right < arr.length ; middle = Math.floor((left + right)/2))
     {
         if (arr[middle] < item)
         {

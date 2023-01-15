@@ -636,6 +636,45 @@ const testCapitalizeFirstLetter = () => {
 }
 
 /**
+ * Create test cases to test NameGender.scout().
+ * Basically we use one giant array lol.
+ * Integration test actually, requires testCapitalizeFirstLetter() to work
+ * @return Whether NameGender.scout() works
+ */
+const testScout = () => {
+    var goog = true;
+    let nameArr = [
+        "Beep",
+        "Boop",
+        "Dream",
+        "George",
+        "Mexicandream",
+        "Quackity",
+        "Sapnap",
+        "Technoblade"
+    ];
+
+    [
+        ["bEep", true],
+        ["dReam", true],
+        ["jorge", false],
+        ["GEORGE", true],
+        ["tEcHnoBlAdE", true],
+        ["Technoblades", false],
+        ["ArianaGrande", false]
+
+    ].forEach(testCase => {
+        if (NameGender.scout(nameArr, testCase[0]) != testCase[1])
+        {
+            console.log(`> testScout failed: ${testCase[0]} returned ${NameGender.scout(nameArr, testCase[0])} instead of ${testCase[1]}`);
+            goog = false;
+        }
+    });
+
+    return goog;
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
@@ -654,7 +693,8 @@ module.exports.runTests = async () => {
         testLookAhead,
         testLookBehind,
         testRelationExtraction,
-        testCapitalizeFirstLetter
+        testCapitalizeFirstLetter,
+        testScout
     ];
     
     for (test of toTest)
