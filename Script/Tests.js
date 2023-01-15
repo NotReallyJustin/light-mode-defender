@@ -5,6 +5,8 @@
 const Helper = require("./Helper");
 const POS = require("./POS");
 const RelationExtraction = require("./RelationExtraction");
+const PronounAnaphora = require("./PronounAnaphora");
+const NameGender = require("./NameGender");
 
 /**
  * Tests Helper.fixSpaces. There's only 1 but all the possible errors are thrown into this test case
@@ -611,6 +613,29 @@ const testRelationExtraction = () => {
 }
 
 /**
+ * Tests Helper.capitalizeFirstLetter()
+ * @return Whether the function works
+ */
+const testCapitalizeFirstLetter = () => {
+    const tests = [
+        ["billy", "Billy"],
+        ["boB", "Bob"],
+        ["Dream", "Dream"],
+        ["SAPNAP", "Sapnap"]
+    ];
+
+    for (var testCase of tests)
+    {
+        if (Helper.capitalizeFirstLetter(testCase[0]) != testCase[1])
+        {
+            console.log(`> testCapitalizeFirstLetter failed: ${Helper.capitalizeFirstLetter(testCase[0])} != ${testCase[1]}`);
+            return false;
+        }
+    }
+    return true;
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
@@ -628,7 +653,8 @@ module.exports.runTests = async () => {
         testRelationFromPOSArr,
         testLookAhead,
         testLookBehind,
-        testRelationExtraction
+        testRelationExtraction,
+        testCapitalizeFirstLetter
     ];
     
     for (test of toTest)

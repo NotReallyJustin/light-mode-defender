@@ -269,3 +269,9 @@ module.exports.pluralize = (word, revert=false) => {
     //Last resort, return word
     return word;
 }
+
+/**
+ * Capitalize first letter of a string and lowercase everything else (like a name)
+ * @param {String} str String to capitalize
+ */
+module.exports.capitalizeFirstLetter = (str) => str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();

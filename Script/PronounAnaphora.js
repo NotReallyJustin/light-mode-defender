@@ -1,6 +1,49 @@
 const pronounData = require("../Data/pronounData.json");
 const { Relation } = require("./RelationExtraction");
 const Helpy = require("./Helper");
+const NameGender = require("./NameGender");
+
+/**
+ * Singular synonym for guys
+ */
+const male = [
+    "man",
+    "guy",
+    "dude",
+    "bloke",
+    "boy",
+    "male",
+    "fella",
+    "fellow",
+    "gent",
+    "husband",
+    "boyfriend",
+    "groom",
+    "mister",
+    "buddy",
+    "sir",
+    "he",
+    "himself",
+    "his",
+    "lad"
+];
+
+/**
+ * Singular synonym for females
+ */
+const female = [
+    "lady",
+    "woman",
+    "madame",
+    "girl",
+    "wife",
+    "girlfriend",
+    "miss",
+    "madam",
+    "she",
+    "her",
+    "herself"
+];
 
 /**
  * Determine whether a pronoun node could be grammatically linked to an antecedent node.
@@ -39,7 +82,45 @@ const proposeAntecedent = (pronoun, antecedent) => {
     //Gender agreement
     if (nouns.length == 1) //Ignore plural, only check if it's 1
     {
+        /**
+         * Antecedent gender
+         */
+        var gender;
+        if (nouns[0][0].pos == "PNOUN")
+        {
+            //Determine gender of name
 
+            if (NameGender.scoutBoy(nouns[0][0].toString()))
+            {
+                gender = "m";
+            }
+            else if (NameGender.scoutGirl(nouns[0][0].toString()))
+            {
+                gender = "f";
+            }
+            else
+            {
+                gender = "n";
+            }
+
+            if (gender != pronounInfo.gender) return false;
+        }
+        else
+        {
+            if (male.indexOf(nouns[0][0].toString()) != -1)
+            {
+                gender = "m";
+            }
+            else if (female.indexOf(nouns[0][0].toString()) != -1)
+            {
+                gender = "f";
+            }
+
+            if (gender == "m" || gender == "f")
+            {
+                if (gender != pronounInfo.gender) return false;
+            }
+        }
     }
 
     //Reflexive agreement
