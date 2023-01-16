@@ -132,3 +132,84 @@ const proposeAntecedent = (pronoun, antecedent) => {
 }
 
 module.exports.proposeAntecedent = proposeAntecedent;
+
+/**
+ * Runs pronoun anaphora via that Hobbs thing. Pronoun.prototype.subject will point to the noun the pronoun refers to, if it exists.
+ * This can't be though... hobbs algorithm here looks wayyyyyy too simple.
+ * @param {Relation} root The root relation node
+ */
+const hobbs = (root) => {
+    let pronounRef;
+    const queue = [root]; //We'll do the DFS by shoving items into this queue
+
+    while (!!queue.length)
+    {
+        let currentItem = queue.shift();
+
+        //If current item is pronoun, run hobbs
+        if (currentItem.pos == "PRONOUN")
+        {
+            pronounRef = currentItem;
+
+            //Traverse everything in the NP before the pronoun node and propose any antecedents we see
+            var foundRef = false; //Track whether or not we found a antecedent reference so we can continue on a new word
+            for (var i = pronounRef.parent.children.indexOf(pronounRef); i >= 0; i--)
+            {
+                if (/\bNOUN\b|\bPNOUN\b/gmi.test(pronounRef.parent.children[i].pos) && proposeAntecedent(pronounRef, pronounRef.parent.children[i]))
+                {
+                    foundRef = true;
+                    pronounRef.subject = pronounRef.parent.children[i];
+                    break;
+                }
+            }
+
+            //If we already found a match, move on to the next pronoun. 
+            if (foundRef)
+            {
+                foundRef = false;
+                continue;
+            }
+            //If we have not, start BFS on pronounRef's parent towards the left of the current pronoun
+
+            const matchQueue = []; //We'll do the BFS hobbs by shoving necessary items in this queue
+            let currSentence = pronoun.parent.parent;
+            matchQueue.unshift(...currSentence.children.slice(0, currSentence.children.indexOf(pronounRef.parent)).reverse());
+            
+            while (!!matchQueue.length && currSentence)
+            {
+                //If we ran out of BFS for the current sentence, go to the previous sentence if it exists. If not, give up.
+                if (matchQueue.length == 0)
+                {
+                    var idxCurrSentence = currSentence.parent.children.indexOf(currSentence);
+                    currSentence = idxCurrSentence > 0 ? currSentence.parent.children[idxCurrSentence - 1] : undefined;
+                    matchQueue.push(currSentence);
+
+                    //if step 8 actually is useful in the manual, if currSentence == 0, then the next iteration of currSentence should be to the right
+                }
+
+                const currentWord = matchQueue.shift();
+
+                if (/\bNOUN\b|\bPNOUN\b/gmi.test(currentWord.pos) && proposeAntecedent(pronounRef, currentWord))
+                {
+                    //if it's a noun, first thing we do is propose it as antecedent
+                    //If it matches, good job! Now exit this hobbs algorithm because it ends.
+
+                    matchQueue.length = 0; //Clears the match queue
+                    pronounRef.subject = currentWord;
+                    break;
+                }
+
+                //If the current word is a chunk but not a noun, see if we can BFS it
+                if (currentWord.isChunk) 
+                {
+                    matchQueue.push(...currentWord.children);
+                }
+            }
+        }
+        else
+        {
+            //If not, keep DFSing until we find a pronoun
+            currentItem.children.length && queue.unshift(...currentItem.children);
+        }
+    }
+}

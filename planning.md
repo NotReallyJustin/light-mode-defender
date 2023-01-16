@@ -280,22 +280,22 @@ This is the flakiest part of the program. <br><br>
 
 Hobbs broken down since we chunked it slightly differently: <br>
 ```
-1. Start at the pronoun
+0. Depth first search from left to right for all children of root (sentences)
+1. If you see a pronoun, start at the pronoun
 2. Climb the Relation node until you see the NP chunk for the pronoun
 3. Traverse all the child nodes of the NP before the pronoun node. Propose any nouns.
 4. Call the NP chunk node X
-
-Now we get into a for loopy thing:
-5. If node X is a sentence, traverse the previous sentence left to right breadth first. Propose any NPs you see along the way as antecedents.
+5. If node X is a sentence, traverse the previous sentences' children left to right breadth first. Propose any NPs you see along the way as antecedents. STOP algorithm.
 6. If node X is not a sentence, go up until you see a sentence.
 7. Traverse breadth first all child nodes of the sentence to the left of node X (right to left). Propose any NPs you see as antecedents.
-8. Go back to step 4
+8. Call the sentence node X
+9. Go back to step 5
 ```
 <br> <br>
 Side note: handle stuff like "light mode said to dark mode 'i am dumb'" because the algorithm would link I --> Dark mode <br>
 Also side note: handle stuff like "Bob has a dog. I petted it" because the algorithm would link I --> Bob <br>
 Also side note: handle "She's a great cat and her name is Becca" because Becca never gets discovered <br>
-Also side note: handle the clusterfuck that is step 8 because the more I look at it, the worse it gets.
+Also side note: handle the clusterfuck that is step 8 in the manual because the more I look at it, the worse it gets.
 
 # 5) Find which NOUN PHRASEs mention light mode
 
