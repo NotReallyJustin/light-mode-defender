@@ -273,6 +273,11 @@ When you propse one of these, make sure the gender (or lack of gender in case of
     Pronoun belongs in a NP usually and the antecedent is an NP, so pronoun.parent.parent == antecedent.parent
 ```
 
+## That Weird Hobb's Thing 
+Follow the instructions <a href="https://www.usna.edu/Users/cs/nchamber/courses/nlp/s15/slides/set14-coreference.pdf">here</a> <br>
+I tried some supervised learning stuff and deterministic stuff myself and they all have like 0% accuracy so just use this for now <br>
+This is the 2nd flakiest part of the program because it only has like 60% accuracy according to research papers 
+
 # 5) Find which NOUN PHRASEs mention light mode
 
 # 6) Find Negations
