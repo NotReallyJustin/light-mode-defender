@@ -104,6 +104,11 @@
         "gender":"n",
         "reflexive":true
     },
+    "itself": {
+        "plural":false,
+        "gender":"n",
+        "reflexive":true
+    },
     "I":{
         "plural":false,
         "gender":"n",

@@ -3,8 +3,8 @@ const path = require("path");
 const fs = require('fs');
 const { binarySearch, capitalizeFirstLetter } = require("./Helper");
 
-const boyNames = fs.readFileSync(path.resolve(`${__dirname}`, '../Data/boyNames.txt')).toString().split("\n");
-const girlNames = fs.readFileSync(path.resolve(`${__dirname}`, '../Data/girlNames.txt')).toString().split("\n");
+const boyNames = fs.readFileSync(path.resolve(`${__dirname}`, '../Data/boyNames.txt')).toString().split("\r\n");
+const girlNames = fs.readFileSync(path.resolve(`${__dirname}`, '../Data/girlNames.txt')).toString().split("\r\n");
 
 /**
  * Finds whether or not a name exists in arrName file

@@ -675,6 +675,92 @@ const testScout = () => {
 }
 
 /**
+ * Creates test cases for PronounAnaphora.proposeAntecedent().
+ * Integration test - requires testScout() and Relation to work properly
+ * @return Whether the function works
+ */
+const testProposeAntecedent = () => {
+    const root1 = new RelationExtraction.Relation(undefined, undefined, "ROOT1");
+    const sentence1 = root1.createChild(undefined, "SENTENCE1");
+    const sentence2 = root1.createChild(undefined, "SENTENCE2");
+    const np1 = sentence1.createChild(undefined, "NP1");
+    const np2 = sentence2.createChild(undefined, "NP2");
+
+    try
+    {
+        var cp1 = np1.createChild(["she", "PRONOUN", 3, "NOUN"]);
+        var ca1 = sentence1.createChild([
+            ["Maria", "PNOUN", 0, "NOUN"]
+        ]);
+        ca1.generateChildFromChunk();
+
+        if (!PronounAnaphora.proposeAntecedent(cp1, ca1)) throw "Propose Antecedent doesn't work for a singular name in same sentence";
+
+        var ca2 = sentence2.createChild([
+            ["Maria", "PNOUN", 0, "NOUN"]
+        ]);
+        ca2.generateChildFromChunk();
+        if (!PronounAnaphora.proposeAntecedent(cp1, ca2)) throw "Propose Antecedent doesn't work for a singular name in different sentence";
+
+        var ca3 = sentence2.createChild([
+            ["Cali", "PNOUN", 0, "NOUN"],
+            ["Maria", "PNOUN", 1, "NOUN"]
+        ]);
+        ca3.generateChildFromChunk();
+
+        if (!PronounAnaphora.proposeAntecedent(cp1, ca3)) throw "Propose Antecedent doesn't work for names with 2 consecutive PNOUNs";
+
+        var cp2 = np1.createChild(["they", "PRONOUN", 4, "NOUN"]);
+        if (PronounAnaphora.proposeAntecedent(cp2, ca3)) throw "Propose Antecedent detects consecutive pronouns as plural";
+
+        var ca4 = sentence2.createChild([
+            ["The", "DETERMINER", 0, "NOUN"],
+            ["burger", "NOUN", 1, "NOUN"],
+            ["and", "CONJUNCTION", 2, "NOUN"],
+            ["it", "PRONOUN", 3, "NOUN"]
+        ]);
+        ca4.generateChildFromChunk();
+
+        if (!PronounAnaphora.proposeAntecedent(cp2, ca4)) throw "Propose Antecedent doesn't work for noun and pronoun in a NP";
+        if (PronounAnaphora.proposeAntecedent(cp1, ca4)) throw "Propose Antecedent treats multiple nouns in a NP as singular";
+
+        var cp3 = np2.createChild(["themselves", "PRONOUN", 4, "NOUN"]);
+        if (!PronounAnaphora.proposeAntecedent(cp3, ca4)) throw "Propose Antecedent doesn't detect reflexives for multiple nouns in an NP";
+
+        var cp4 = np2.createChild(["itself", "PRONOUN", 5, "NOUN"]);
+        if (PronounAnaphora.proposeAntecedent(cp4, ca4)) throw "Propose Antecedent treats multiple nouns in an NP as reflexive singular";
+
+        var cp5 = np1.createChild(["themselves", "PRONOUN", 4, "NOUN"]);
+        if (PronounAnaphora.proposeAntecedent(cp5, ca4)) throw "Propose Antecedent detects reflexive even though ca4 and np5 are in different sentences";
+
+        var ca5 = sentence1.createChild([
+            ["The", "DETERMINER", 0, "NOUN"],
+            ["boys", "NOUN", 1, "NOUN"] //Really good show btw
+        ]);
+        ca5.generateChildFromChunk();
+
+        if (!PronounAnaphora.proposeAntecedent(cp5, ca5)) throw "Propose Antecedent doesn't treat boys as plural";
+
+        var ca6 = sentence1.createChild([
+            ["dUde", "NOUN", 0, "NOUN"]
+        ]);
+        ca6.generateChildFromChunk();
+
+        if (PronounAnaphora.proposeAntecedent(cp1, ca6)) throw "Propose Antecedent doesn't match gender correctly (dude != f)";
+
+        cp6 = np1.createChild(["himself", "PRONOUN", 1, "NOUN"]);
+        if (!PronounAnaphora.proposeAntecedent(cp6, ca6)) throw "Propose Antecedent doesn't match reflexive gender correctly";
+    }
+    catch(err)
+    {
+        console.log("> testProposeAntecedent failed: " + err);
+        return false;
+    }
+    
+    return true;
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
@@ -694,7 +780,8 @@ module.exports.runTests = async () => {
         testLookBehind,
         testRelationExtraction,
         testCapitalizeFirstLetter,
-        testScout
+        testScout,
+        testProposeAntecedent
     ];
     
     for (test of toTest)

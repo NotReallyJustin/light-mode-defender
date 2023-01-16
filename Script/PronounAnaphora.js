@@ -57,6 +57,8 @@ const proposeAntecedent = (pronoun, antecedent) => {
     const nouns = antecedent.findNoun();
     const pronounInfo = pronounData[pronounStr];
 
+    if (pronounInfo == undefined) return true;
+
     //Determine number match
     if (nouns.length == 0)
     {
@@ -124,9 +126,8 @@ const proposeAntecedent = (pronoun, antecedent) => {
     }
 
     //Reflexive agreement
-    var reflexive = pronoun.parent == antecedent.parent;
-    if (reflexive != pronounInfo.reflexive) return false;
-    
+    if (pronounInfo.reflexive && pronoun.parent.parent != antecedent.parent) return false;
+
     return true;
 }
 

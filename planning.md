@@ -269,8 +269,8 @@ When you propse one of these, make sure the gender (or lack of gender in case of
 
 **Determine Reflexive Match** <br>
 ```
-1. If the pronoun and antecedent are both in the same sentence, it could be reflexive.
-2. Yea pronoun might be ambigious in that case but it's their fault in tha case
+1. If the pronoun is reflexive, make sure the pronoun and antecedent are part of the same sentence
+    Pronoun belongs in a NP usually and the antecedent is an NP, so pronoun.parent.parent == antecedent.parent
 ```
 
 # 5) Find which NOUN PHRASEs mention light mode
