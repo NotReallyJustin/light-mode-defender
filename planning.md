@@ -276,7 +276,26 @@ When you propse one of these, make sure the gender (or lack of gender in case of
 ## That Weird Hobb's Thing 
 Follow the instructions <a href="https://www.usna.edu/Users/cs/nchamber/courses/nlp/s15/slides/set14-coreference.pdf">here</a> <br>
 I tried some supervised learning stuff and deterministic stuff myself and they all have like 0% accuracy so just use this for now <br>
-This is the 2nd flakiest part of the program because it only has like 60% accuracy according to research papers 
+This is the flakiest part of the program. <br><br>
+
+Hobbs broken down since we chunked it slightly differently: <br>
+```
+1. Start at the pronoun
+2. Climb the Relation node until you see the NP chunk for the pronoun
+3. Traverse all the child nodes of the NP before the pronoun node. Propose any nouns.
+4. Call the NP chunk node X
+
+Now we get into a for loopy thing:
+5. If node X is a sentence, traverse the previous sentence left to right breadth first. Propose any NPs you see along the way as antecedents.
+6. If node X is not a sentence, go up until you see a sentence.
+7. Traverse breadth first all child nodes of the sentence to the left of node X (right to left). Propose any NPs you see as antecedents.
+8. Go back to step 4
+```
+<br> <br>
+Side note: handle stuff like "light mode said to dark mode 'i am dumb'" because the algorithm would link I --> Dark mode <br>
+Also side note: handle stuff like "Bob has a dog. I petted it" because the algorithm would link I --> Bob <br>
+Also side note: handle "She's a great cat and her name is Becca" because Becca never gets discovered <br>
+Also side note: handle the clusterfuck that is step 8 because the more I look at it, the worse it gets.
 
 # 5) Find which NOUN PHRASEs mention light mode
 
