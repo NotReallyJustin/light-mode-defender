@@ -761,6 +761,56 @@ const testProposeAntecedent = () => {
 }
 
 /**
+ * This tests PronounAnaphora.hobbs() - The hobb algorithm
+ * @returns Whether Hobbs Algorithm works
+ */
+const testHobbs = () => {
+    const root = RelationExtraction.Relation.buildFromPOSArr([
+        [
+            ["David", "PNOUN", 0, "NOUN"],
+        ],
+        [
+            ["met", "VERB", 0, "VERB"],
+        ],
+        [
+            ["Sarah", "PNOUN", 0, "NOUN"]
+        ],
+        [".", "PUNCTUATIONEND"],
+        [
+            ["A", "DETERMINER", 0, "NOUN"],
+            ["girl", "PRONOUN", 1, "NOUN"],
+            ["that", "SCONJ", 2, "NOUN"],
+            ["ate", "VERB", 3, "NOUN"],
+            ["with", "ADPOSITION", 4, "NOUN"],
+            ["him", "PRONOUN", 5, "NOUN"],
+        ],
+        [
+            ["drank", "VERB", 0, "VERB"]
+        ],
+        [
+            ["herself", "PRONOUN", 0, "NOUN"]
+        ]
+    ]);
+
+    const npDavid = root.children[0].children[0];
+    const npSarah = root.children[0].children[2];
+    const npGirl = root.children[1].children[0].children[1];
+    const npHim = root.children[1].children[0].children[5];
+    const npHerself = root.children[1].children[2].children[0];
+
+    try
+    {
+        if (npHerself.subject != npGirl) throw "Herself doesn't pronoun anaphora correctly.";
+        if (npHim.subject != npDavid) throw "Him doesn't pronoun anaphora across sentences.";
+    }
+    catch(err)
+    {
+        console.log("> testProposeAntecedent failed: " + err);
+        return false;
+    }
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
@@ -781,7 +831,8 @@ module.exports.runTests = async () => {
         testRelationExtraction,
         testCapitalizeFirstLetter,
         testScout,
-        testProposeAntecedent
+        testProposeAntecedent,
+        testHobbs
     ];
     
     for (test of toTest)

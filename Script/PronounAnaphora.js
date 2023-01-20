@@ -213,3 +213,5 @@ const hobbs = (root) => {
         }
     }
 }
+
+module.exports.hobbs = hobbs;
