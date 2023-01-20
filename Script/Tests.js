@@ -800,6 +800,7 @@ const testHobbs = () => {
 
     try
     {
+        console.log(npHerself.subject);
         if (npHerself.subject != npGirl) throw "Herself doesn't pronoun anaphora correctly.";
         if (npHim.subject != npDavid) throw "Him doesn't pronoun anaphora across sentences.";
     }
