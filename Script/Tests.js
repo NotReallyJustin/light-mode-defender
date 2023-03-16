@@ -7,6 +7,7 @@ const POS = require("./POS");
 const RelationExtraction = require("./RelationExtraction");
 const PronounAnaphora = require("./PronounAnaphora");
 const NameGender = require("./NameGender");
+const Detection = require("./Detection");
 
 /**
  * Tests Helper.fixSpaces. There's only 1 but all the possible errors are thrown into this test case
@@ -816,6 +817,82 @@ const testHobbs = () => {
 }
 
 /**
+ * Tests Detection.testNegations
+ * @returns Whether or not Detection.testNegations work.
+ */
+const testTestNegations = () => {
+    const root = RelationExtraction.Relation.buildFromPOSArr([
+        [
+            ["is", "IS", 0, "ADJECTIVE"],
+            ["not", "PART", 1, "ADJECTIVE"],
+            ["excited", "ADJECTIVE", 2, "ADJECTIVE"]
+        ],
+        [
+            ["is", "IS", 0, "ADJECTIVE"],
+            ["not", "PART", 1, "ADJECTIVE"],
+            ["not", "PART", 2, "ADJECTIVE"],
+            ["excited", "ADJECTIVE", 3, "ADJECTIVE"]
+        ],
+        [
+            ["is", "IS", 0, "ADJECTIVE"],
+            ["not", "PART", 1, "ADJECTIVE"],
+            ["not", "PART", 2, "ADJECTIVE"],
+            ["reverse", "PART", 2, "ADJECTIVE"],
+            ["counter", "PART", 2, "ADJECTIVE"],
+            ["not", "PART", 2, "ADJECTIVE"],
+            ["opposite", "PART", 2, "ADJECTIVE"],
+            ["rarely", "PART", 2, "ADJECTIVE"],
+            ["excited", "ADJECTIVE", 3, "ADJECTIVE"]
+        ],
+        [
+            ["is", "IS", 0, "ADJECTIVE"],
+            ["not", "PART", 1, "ADJECTIVE"],
+            ["excited", "ADJECTIVE", 2, "ADJECTIVE"],
+            [",", "PUNCTUATION", 3, "ADJECTIVE"],
+            ["glad", "ADJECTIVE", 4, "ADJECTIVE"],
+            [",", "PUNCTUATION", 5, "ADJECTIVE"],
+            ["or", "CONJUNCTION", 6, "ADJECTIVE"],
+            ["sleepy", "ADJECTIVE", 7, "ADJECTIVE"]
+        ],
+        [
+            ["is", "IS", 0, "ADJECTIVE"],
+            ["not", "PART", 1, "ADJECTIVE"],
+            ["excited", "ADJECTIVE", 2, "ADJECTIVE"],
+            [",", "PUNCTUATION", 3, "ADJECTIVE"],
+            ["not", "PART", 4, "ADJECTIVE"],
+            ["glad", "ADJECTIVE", 5, "ADJECTIVE"],
+            [",", "PUNCTUATION", 6, "ADJECTIVE"],
+            ["and", "CONJUNCTION", 7, "ADJECTIVE"],
+            ["not", "PART", 8, "ADJECTIVE"],
+            ["sleepy", "ADJECTIVE", 9, "ADJECTIVE"]
+        ]
+    ]);
+
+    const sentence1 = root.children[0];
+    const normalNegate = sentence1.children[0];
+    const doubleNegate = sentence1.children[1];
+    const wackyNegate = sentence1.children[2];
+    const factoredNegate = sentence1.children[3];
+    const distributedNegate = sentence1.children[4];
+
+    try
+    {
+        if (!Detection.testNegations(normalNegate)) throw "Normal Negation is not working properly";
+        if (Detection.testNegations(doubleNegate)) throw "Double Negations aren't getting detected";
+        if (!Detection.testNegations(wackyNegate)) throw "Multiple, mixed negations aren't getting detected properly";
+        if (!Detection.testNegations(factoredNegate)) throw "Factored adj negations aren't getting checked";
+        if (!Detection.testNegations(distributedNegate)) throw "Distributed adj negations aren't getting the correct treatment"; 
+    }
+    catch(err)
+    {
+        console.log("> testTestNegations failed: " + err);
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
@@ -837,7 +914,8 @@ module.exports.runTests = async () => {
         testCapitalizeFirstLetter,
         testScout,
         testProposeAntecedent,
-        testHobbs
+        testHobbs,
+        testTestNegations
     ];
     
     for (test of toTest)

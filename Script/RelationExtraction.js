@@ -16,6 +16,11 @@ class Relation
     {
         this.posTag = posTag;
         this.parent = parent;
+
+        /**
+         * The children of this relation. See the imgur.
+         * @type {Relation[]}
+         */
         this.children = [];
 
         /**
