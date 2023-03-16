@@ -301,7 +301,10 @@ Also side note: handle the clusterfuck that is step 8 in the manual because the 
 
 # 5) Sentiment Analysis all light mode noun phrases
 ## Before we Begin: Lemmatize Helper Function
-AFINN-165 works on Lemmas. Lemmatize stuff.
+AFINN-165 works on Lemmas. Lemmatize stuff. <br>
+https://tartarus.org/martin/PorterStemmer/def.txt <-- Normally I would say just follow this, but check some of the lemma algorithms because they don't sound like English <br>
+Like `(m>1) AL    ->                  revival        ->  reviv` makes no sense. <br>
+Instead, `AL -> E`.
 
 ## Before we Begin: Test Negations
 When doing sentiment analysis, handle negations and double negations in case Becc or someone tries to pull a sneaky and go "light mode is not not not wonderful"<br>

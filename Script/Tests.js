@@ -8,6 +8,7 @@ const RelationExtraction = require("./RelationExtraction");
 const PronounAnaphora = require("./PronounAnaphora");
 const NameGender = require("./NameGender");
 const Detection = require("./Detection");
+const Lemmatize = require("./Lemmatize");
 
 /**
  * Tests Helper.fixSpaces. There's only 1 but all the possible errors are thrown into this test case
@@ -893,6 +894,31 @@ const testTestNegations = () => {
 }
 
 /**
+ * Tests Lemmatize.lemmatize
+ * @return If Lemmatize.lemmatize works
+ */
+const testLemmatize = () => {
+    try
+    {
+        if (Lemmatize.lemmatize("sleeping", "VERB") != "sleep") throw "Lemmatize not working for -ing";
+        if (Lemmatize.lemmatize("created", "VERB") != "create") throw "Lemmatize not working for drop e add ed past tenses";
+        if (Lemmatize.lemmatize("crashed", "VERB") != "crash") throw "Lemmatize not working for -ed";
+        if (Lemmatize.lemmatize("crashes", "VERB") != "crash") throw "Lemmatize not working for -s";
+        if (Lemmatize.lemmatize("slept", "VERB") != "sleep") throw "Lemmatize not working for past tense that drops ep with et";
+        if (Lemmatize.lemmatize("dragged", "VERB") != "drag") throw "Lemmatize not working for double consonant past tense";
+        if (Lemmatize.lemmatize("conjuring", "VERB") != "conjure") throw "Lemmatize not working for dropping e in ing";
+        if (Lemmatize.lemmatize("swam", "VERB") != "swim") throw "Lemmatize not working for irregular past tense items";
+    }
+    catch(err)
+    {
+        console.log("> testLemmatize failed: " + err);
+        return false;
+    }
+
+    return true;
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
@@ -915,7 +941,8 @@ module.exports.runTests = async () => {
         testScout,
         testProposeAntecedent,
         testHobbs,
-        testTestNegations
+        testTestNegations,
+        testLemmatize
     ];
     
     for (test of toTest)
