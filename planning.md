@@ -300,9 +300,94 @@ Also side note: handle "She's a great cat and her name is Becca" because Becca n
 Also side note: handle the clusterfuck that is step 8 in the manual because the more I look at it, the worse it gets.
 
 # 5) Sentiment Analysis all light mode noun phrases
-## Test Negations
-When doing sentiment analysis, handle negations and double negations in case Becc or someone tries to pull a sneaky and go "light mode is not not not wonderful"
+## Before we Begin: Lemmatize Helper Function
+AFINN-165 works on Lemmas. Lemmatize stuff.
 
+## Before we Begin: Test Negations
+When doing sentiment analysis, handle negations and double negations in case Becc or someone tries to pull a sneaky and go "light mode is not not not wonderful"<br>
+Remove up to as much negations as there are `"that POS type you're looking for" - 1` <br>
+This is because "not happy, sleepy, or tired" is the same thing as "not happy, not sleepy, or not tired" <br>
+Ideally, you wrote the countChildren() method in RelationExtraction.js because that makes things so much easier
+<br><br>
+Some negation words:
+```js
+not
+anti
+opposite
+reverse
+no
+none
+nothing
+never
+hardly
+barely
+rarely
+infrequently
+seldom
+nay
+but
+nowhere
+ne'er
+noways
+nowise
+unlike
+unrelated
+counter
+```
+
+## Before we Begin: Test Contain Mode
+Test whether or not a phrase we're looking at is mentioning light mode or dark mode. <br>
+This should work for a chunk because most things are evaluated at the chunk level. <br>
+Testing for mode consists of two parts: whether or not "mode" was even mentioned (mentionMode) and whether a phrase like "light" or "dark" was involved (mentionLight/mentionDark) <br>
+<br>
+Process: <br>
+```
+1. Test negations. It's kinda important to know when someone says "not light mode" or "the theme that is not white" that they're talking about dark mode
+2. Loop through every word in the children
+3. Lemmatize all the words
+4. If the word is a pronoun, test if that pronoun is referencing anything by running testContainsMode() on the subject. Then, just copy the results. If it does, straight up override.
+5. If the word is a noun or a pronoun, see if it contains one of the "mode words." If yes, it mentionsMode
+6. If the word is an adjective, see if it contains a "light mode word" or "dark mode word." If yes, it mentionsLight/mentionsDark
+7. (Experimental) If the word is a verb, check to see if Justin's name is in its subject, and whether or not the verb is something like "justin hates." If it is, mentionsLight/mentionsDark
+8. Piece together the puzzle. Remember, has it been overridden by step 4?
+9. If not, you need mentionsMode and either one of mentionsLight/mentionsDark
+```
+<br>
+
+You might want these: <br>
+```js
+const modeWords = new SimpleMap([
+	"mode",
+	"theme",
+	"color",
+	"style",
+    "font"
+]);
+
+const lightMode = new SimpleMap([
+	"light",
+	"white",
+	"bright",
+]);
+
+const darkMode = new SimpleMap([
+	"amoled",
+	"dark",
+	"black",
+	"default",
+    "grey"
+]);
+
+const justinRelLight = {
+	"justin": new SimpleMap(["use", "have", "look", "see", "set"]),
+	"seal": new SimpleMap(["use", "have", "look", "see", "set"])
+};
+
+const justinRelDark = {
+	"justin": new SimpleMap(["hate", "vomit", "dislke"]),
+	"seal": new SimpleMap(["hate", "vomit", "dislke"])
+};
+```
 # 6) Return score
 
 # 7) ???
