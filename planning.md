@@ -86,6 +86,8 @@ Add some methods to save some time down the line. Ideas: <br />
 1. A toString() that returns all the text belonging to the relation node (like sentence text that belongs)
 2. Please add createChild() method because it's such a pain to manually create and append a child node, and then you get into referencing problems
 3. findNoun(). Find the actual noun in a noun phrase because NPs come with a bunch of nonsense
+4. childrenHas(). Find is any immediate child element has a certain POS
+5. countChildren(). Basically now we count the number of child elements with a certain POS. Might also be a good idea to make this recursive
 ```
 
 ## Helpy functions
@@ -297,16 +299,14 @@ Also side note: handle stuff like "Bob has a dog. I petted it" because the algor
 Also side note: handle "She's a great cat and her name is Becca" because Becca never gets discovered <br>
 Also side note: handle the clusterfuck that is step 8 in the manual because the more I look at it, the worse it gets.
 
-# 5) Find which NOUN PHRASEs mention light mode
+# 5) Sentiment Analysis all light mode noun phrases
+## Test Negations
+When doing sentiment analysis, handle negations and double negations in case Becc or someone tries to pull a sneaky and go "light mode is not not not wonderful"
 
-# 6) Find Negations
+# 6) Return score
 
-# 7) Sentiment Analysis all light mode noun phrases
-
-# 8) Return score
-
-# 9) ???
+# 7) ???
 ## Write tests for everything
 I'll get to that probably in 2077
 
-# 10) Religious Victory
+# 8) Religious Victory

@@ -318,15 +318,12 @@ const testRelation = () => {
         if (relationTree.children[0].toString() != "the cat in las vegas") throw "Relation doesn't have right toString for POS Chunks";
         if (relationTree.children[0].children[0].toString() != "the") throw "Relation doesn't have right toString for child of POS chunks";
 
-        if (!relationTree.children[0].childrenHas("PNOUN")) return "Children has doesn't work";
-        if (relationTree.children[0].childrenHas("SCONJ")) return "Children has doesn't work";
-
         var findNoun = relationTree.children[0].findNoun();
-        if (findNoun.length != 2) return "Relation findNoun does not give the right number of nouns";
-        if (findNoun[0].length != 1) return "Relation findNoun's array isn't structured properly for a word";
-        if (findNoun[0][0].toString() != "cat") return "Relation findNoun failed for 1 word";
-        if (findNoun[1].length != 2) return "Relation findNoun's array isn't structured properly for 2 words";
-        if (findNoun[1][1].toString() != "vegas") return "Relation findNoun failed for 2 words";
+        if (findNoun.length != 2) throw "Relation findNoun does not give the right number of nouns";
+        if (findNoun[0].length != 1) throw "Relation findNoun's array isn't structured properly for a word";
+        if (findNoun[0][0].toString() != "cat") throw "Relation findNoun failed for 1 word";
+        if (findNoun[1].length != 2) throw "Relation findNoun's array isn't structured properly for 2 words";
+        if (findNoun[1][1].toString() != "vegas") throw "Relation findNoun failed for 2 words";
     }
     catch(err)
     {
@@ -401,15 +398,19 @@ const testRelationFromPOSArr = () => {
         if (sentenceOne.children[0].toString() != "the cat in las vegas") throw "Relation doesn't have right toString for POS Chunks";
         if (sentenceOne.children[0].children[0].toString() != "the") throw "Relation doesn't have right toString for child of POS chunks";
 
-        if (!sentenceOne.childrenHas("PNOUN")) return "Children has doesn't work";
-        if (sentenceOne.childrenHas("SCONJ")) return "Children has doesn't work";
+        if (sentenceOne.childrenHas("PNOUN")) throw "Children has doesn't work for 1 level surface";
+        if (!sentenceOne.children[0].childrenHas("PNOUN")) throw "childrenHas doesn't work in a chunk";
+        if (sentenceOne.childrenHas("SCONJ")) throw "Children has doesn't work";
+
+        if (relationTree.countChildren("ADPOSITION", true) != 2) throw "Count Children doesn't work recursively."
+        if (relationTree.countChildren("NOUN", true) != 4) throw "Count Children doesn't work recursively for phrases with chunks."
 
         var findNoun = sentenceOne.children[0].findNoun();
-        if (findNoun.length != 2) return "Relation findNoun does not give the right number of nouns";
-        if (findNoun[0].length != 1) return "Relation findNoun's array isn't structured properly for a word";
-        if (findNoun[0][0].toString() != "cat") return "Relation findNoun failed for 1 word";
-        if (findNoun[1].length != 2) return "Relation findNoun's array isn't structured properly for 2 words";
-        if (findNoun[1][1].toString() != "vegas") return "Relation findNoun failed for 2 words";
+        if (findNoun.length != 2) throw "Relation findNoun does not give the right number of nouns";
+        if (findNoun[0].length != 1) throw "Relation findNoun's array isn't structured properly for a word";
+        if (findNoun[0][0].toString() != "cat") throw "Relation findNoun failed for 1 word";
+        if (findNoun[1].length != 2) throw "Relation findNoun's array isn't structured properly for 2 words";
+        if (findNoun[1][1].toString() != "vegas") throw "Relation findNoun failed for 2 words";
     }
     catch(err)
     {

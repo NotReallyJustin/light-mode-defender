@@ -40,9 +40,9 @@ class Relation
         this.pos = forcedPOS ? forcedPOS : (this.isChunk ? posTag[0][3] : posTag[1]);
 
         /**
-         * This POS phrase's "affiliation". Basically it means whether or not this phrase mentions dark or light mode.
+         * Later decision down the line, indicating if we want to override this word in Sentiment Analysis calculations
          */
-        this.affiliation = "NEUTRAL";
+        this.overridden = false;
     }
 
     /**
@@ -91,10 +91,48 @@ class Relation
     {
         if (!this.hasForcedPOS && this.isChunk)
         {
-            return this.children.some(twoDPOS => new RegExp(posType, 'gmi').test(twoDPOS.pos));
+            return this.children.some(twoDPOS => new RegExp(`\\b${posType}\\b`, 'gmi').test(twoDPOS.pos));
         }
 
         return false;
+    }
+
+    /**
+     * Read: "count the number of children that has [an ADJECTIVE]"
+     * @param {String} posType The POS type you're trying to count
+     * @param {boolean} recursive Whether to recursively do this for all child elements of child nodes. False by default
+     * @returns Number of child elements that have the POS. If this doesn't have children, just return 0.
+     */
+    countChildren(posType, recursive=false)
+    {
+        if (!recursive)
+        {
+            if (!this.hasForcedPOS && this.isChunk)
+            {
+                return this.children.filter(twoDPOS => new RegExp(`\\b${posType}\\b`, 'gmi').test(twoDPOS.pos)).length;
+            }
+
+            return 0;
+        }
+        else
+        {
+            let num = 0;
+            let posTypeRegEx = new RegExp(`\\b${posType}\\b`, 'gmi'); //RegExp of the POS to use to clear any case sensitive blah blah blah that comes up
+
+            if (this.children.length != 0)
+            {
+                this.children.forEach(childElement => {
+                    
+                    if (posTypeRegEx.test(childElement.pos))
+                    {
+                        num++;
+                    }
+                    num += childElement.countChildren(posType, true);
+                });
+            }
+
+            return num;
+        }
     }
 
     /**
