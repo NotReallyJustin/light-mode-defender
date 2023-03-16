@@ -38,6 +38,11 @@ class Relation
          * The POS of the Relation node. This would be the POS of the individual word (if not chunk) or the POS of the POS chunk (if chunk)
          */
         this.pos = forcedPOS ? forcedPOS : (this.isChunk ? posTag[0][3] : posTag[1]);
+
+        /**
+         * This POS phrase's "affiliation". Basically it means whether or not this phrase mentions dark or light mode.
+         */
+        this.affiliation = "NEUTRAL";
     }
 
     /**
