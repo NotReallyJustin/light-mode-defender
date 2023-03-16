@@ -275,7 +275,7 @@ When you propse one of these, make sure the gender (or lack of gender in case of
 
 ## That Weird Hobb's Thing 
 Follow the instructions <a href="https://www.usna.edu/Users/cs/nchamber/courses/nlp/s15/slides/set14-coreference.pdf">here</a> <br>
-I tried some supervised learning stuff and deterministic stuff myself and they all have like 0% accuracy so just use this for now <br>
+I tried some supervised learning stuff and deterministic stuff myself and they all kinda flopped so just use this for now <br>
 This is the flakiest part of the program. <br><br>
 
 Hobbs broken down since we chunked it slightly differently: <br>

@@ -794,13 +794,14 @@ const testHobbs = () => {
 
     const npDavid = root.children[0].children[0];
     const npSarah = root.children[0].children[2];
-    const npGirl = root.children[1].children[0].children[1];
+    const npGirl = root.children[1].children[0];
     const npHim = root.children[1].children[0].children[5];
     const npHerself = root.children[1].children[2].children[0];
 
+    PronounAnaphora.hobbs(root);    
+
     try
     {
-        console.log(npHerself.subject);
         if (npHerself.subject != npGirl) throw "Herself doesn't pronoun anaphora correctly.";
         if (npHim.subject != npDavid) throw "Him doesn't pronoun anaphora across sentences.";
     }
@@ -809,6 +810,8 @@ const testHobbs = () => {
         console.log("> testProposeAntecedent failed: " + err);
         return false;
     }
+
+    return true;
 }
 
 /**

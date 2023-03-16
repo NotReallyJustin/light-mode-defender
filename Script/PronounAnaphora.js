@@ -64,7 +64,7 @@ const proposeAntecedent = (pronoun, antecedent) => {
     {
         return false;
     }
-    else if (nouns.length >= 2)
+    else if (nouns.length >= 2 && antecedent.childrenHas("CONJUNCTION"))
     {
         if (!pronounInfo.plural) return false;
     }
@@ -80,7 +80,7 @@ const proposeAntecedent = (pronoun, antecedent) => {
             if (isPlural != pronounInfo.plural) return false;
         }
     }
-
+    
     //Gender agreement
     if (nouns.length == 1) //Ignore plural, only check if it's 1
     {
@@ -169,19 +169,19 @@ const hobbs = (root) => {
                 foundRef = false;
                 continue;
             }
-            //If we have not, start BFS on pronounRef's parent towards the left of the current pronoun
 
+            //If we have not, start BFS on pronounRef's parent towards the left of the current pronoun
             const matchQueue = []; //We'll do the BFS hobbs by shoving necessary items in this queue
-            let currSentence = pronoun.parent.parent;
+            let currSentence = pronounRef.parent.parent;
             matchQueue.unshift(...currSentence.children.slice(0, currSentence.children.indexOf(pronounRef.parent)).reverse());
             
-            while (!!matchQueue.length && currSentence)
+            while (currSentence)
             {
                 //If we ran out of BFS for the current sentence, go to the previous sentence if it exists. If not, give up.
                 if (matchQueue.length == 0)
                 {
                     var idxCurrSentence = currSentence.parent.children.indexOf(currSentence);
-                    currSentence = idxCurrSentence > 0 ? currSentence.parent.children[idxCurrSentence - 1] : undefined;
+                    currSentence = idxCurrSentence > 0 ? currSentence.parent.children[idxCurrSentence - 1] : undefined; //STOP CONDITION HERE BOIS 
                     matchQueue.push(currSentence);
 
                     //if step 8 actually is useful in the manual, if currSentence == 0, then the next iteration of currSentence should be to the right
