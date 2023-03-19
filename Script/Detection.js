@@ -80,6 +80,7 @@ const justinRelDark = {
  * Precondition: You should really only use this on a NP
  * @param {Relation} chunk A relation, preferably `chunk.isChunk == true`. Quite literally.
  * @return {String} code: "light", "dark", "none" - each representing what mode this NP is talking about
+ * @see planning.md for more details on how this works
  */
 module.exports.testContainMode = (chunk) => {
     //If we by some magic have already evaluated the mode type, just return it.
