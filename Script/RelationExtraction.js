@@ -48,6 +48,11 @@ class Relation
          * Later decision down the line, indicating if we want to override this word in Sentiment Analysis calculations
          */
         this.overridden = false;
+
+        /**
+         * Just memoizes whether this current relation node represents light mode, dark mode, or neither. Not gonna be useful until Detection.js
+         */
+        this.modeType;
     }
 
     /**

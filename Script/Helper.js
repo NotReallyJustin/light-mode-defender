@@ -275,3 +275,15 @@ module.exports.pluralize = (word, revert=false) => {
  * @param {String} str String to capitalize
  */
 module.exports.capitalizeFirstLetter = (str) => str.substring(0, 1).toUpperCase() + str.substring(1).toLowerCase();
+
+/**
+ * Shortcut to construct a JSON "map" with all values set to true to denote that they exist
+ * Has limited map functions because, well, it's made to be a shortcut tool
+ * @param {any[]} itemArr An array of any items that's going in the SimpleMap
+ */
+module.exports.SimpleMap = function(itemArr) {
+	for (var item of itemArr)
+	{
+		this[item] = true;
+	}
+};
