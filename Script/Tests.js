@@ -9,7 +9,7 @@ const PronounAnaphora = require("./PronounAnaphora");
 const NameGender = require("./NameGender");
 const Detection = require("./Detection");
 const Lemmatize = require("./Lemmatize");
-
+ 
 /**
  * Tests Helper.fixSpaces. There's only 1 but all the possible errors are thrown into this test case
  * @returns Whether test is successful
@@ -894,7 +894,115 @@ const testTestNegations = () => {
 }
 
 /**
- * Tests Lemmatize.lemmatize
+ * Tests whether or not Detection.testContainMode works
+ * Requires testTestNegations to also work.
+ * @returns Whether it works
+ */
+const testContainMode = () => {
+    const root = RelationExtraction.Relation.buildFromPOSArr([
+        [
+            ["Discord", "PNOUN", 0, "NOUN"],
+            ["light", "ADJECTIVE", 1, "NOUN"],
+            ["mode", "NOUN", 2, "NOUN"]
+        ],
+        [
+            ["dark", "ADJECTIVE", 0, "NOUN"],
+            ["theme", "NOUN", 1, "NOUN"],
+            ["Discord", "PNOUN", 2, "NOUN"]
+        ],
+        [
+            ["vanilla", "ADJECTIVE", 0, "NOUN"],
+            ["popcorn", "NOUN", 1, "NOUN"],
+            ["swirl", "NOUN", 2, "NOUN"]
+        ],
+        [
+            ["slow", "ADJECTIVE", 0, "NOUN"],
+            ["mode", "NOUN", 1, "NOUN"],
+            ["on", "VERB", 2, "NOUN"]
+        ],
+        [
+            ["light", "ADJECTIVE", 0, "NOUN"],
+            ["mocha", "NOUN", 1, "NOUN"],
+            ["caramel", "NOUN", 2, "NOUN"],
+            ["frappuchino", "NOUN", 3, "NOUN"]
+        ],
+        [
+            ["dark", "ADJECTIVE", 0, "NOUN"],
+            ["chocolate", "NOUN", 1, "NOUN"],
+            ["mousse", "NOUN", 2, "NOUN"],
+            ["cake", "NOUN", 3, "NOUN"]
+        ],
+        [
+            ["that", "DETERMINER", 0, "NOUN"],
+            ["white", "ADJECTIVE", 1, "NOUN"],
+            ["theme", "NOUN", 2, "NOUN"]
+        ],
+        [
+            ["Discord", "PNOUN", 0, "NOUN"],
+            ["default", "ADJECTIVE", 1, "NOUN"],
+            ["font", "NOUN", 2, "NOUN"]
+        ],
+        [
+            ["not", "PART", 0, "NOUN"],
+            ["grey", "ADJECTIVE", 1, "NOUN"],
+            ["amoled", "ADJECTIVE", 2, "NOUN"],
+            ["mode", "NOUN", 3, "NOUN"]
+        ],
+        [
+            ["not", "PART", 0, "NOUN"],
+            ["not", "PART", 1, "NOUN"],
+            ["dark", "ADJECTIVE", 2, "NOUN"],
+            ["font", "NOUN", 3, "NOUN"]
+        ],
+        [
+            ["the", "DETERMINANT", 0, "NOUN"],
+            ["theme", "NOUN", 1, "NOUN"],
+            ["that", "SCONJ", 2, "NOUN"],
+            ["Justin", "PNOUN", 3, "NOUN"],
+            ["uses", "VERB", 4, "NOUN"]
+        ]
+    ]);
+
+    //Manually do rel extraction here
+    root.children[0].children[10].children[4].subject = root.children[0].children[10].children[3];
+
+    const lightModeBasic = root.children[0].children[0];
+    const darkModeBasic = root.children[0].children[1];
+    const neutralBasic = root.children[0].children[2];
+    const neutralHasMode = root.children[0].children[3];
+    const neutralHasLight = root.children[0].children[4];
+    const neutralHasDark = root.children[0].children[5];
+    const light = root.children[0].children[6];
+    const dark = root.children[0].children[7];
+    const lightNegated = root.children[0].children[8];
+    const darkDoubleNegated = root.children[0].children[9];
+    const lightJustin = root.children[0].children[10];
+
+    try
+    {
+        if (Detection.testContainMode(lightModeBasic) != "light") throw "Normal light detection is not working properly";
+        if (Detection.testContainMode(darkModeBasic) != "dark") throw "Normal dark detection is not working properly";
+        if (Detection.testContainMode(neutralBasic) != "none") throw "Neutral detection not working";
+        if (Detection.testContainMode(neutralHasMode) != "none") throw "Neutral not detected when only has mode word";
+        if (Detection.testContainMode(neutralHasLight) != "none") throw "Neutral not detected when only has light"; 
+        if (Detection.testContainMode(neutralHasDark) != "none") throw "Neutral not detected when only has dark"; 
+        if (Detection.testContainMode(light) != "light") throw "Normal/Casual Light not detected"; 
+        if (Detection.testContainMode(dark) != "dark") throw "Normal/Casual Dark not detected"; 
+        if (Detection.testContainMode(lightNegated) != "light") throw "Correct node not detected when negated"; 
+        if (Detection.testContainMode(darkDoubleNegated) != "dark") throw "Correct node not detected when double negated"; 
+        if (Detection.testContainMode(lightJustin) != "light") throw "Light not detected when adding Justin context";
+    }
+    catch(err)
+    {
+        console.log("> testContainMode failed: " + err);
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Tests Lemmatize.lemmatize. 
  * @return If Lemmatize.lemmatize works
  */
 const testLemmatize = () => {
@@ -942,7 +1050,8 @@ module.exports.runTests = async () => {
         testProposeAntecedent,
         testHobbs,
         testTestNegations,
-        testLemmatize
+        testLemmatize,
+        testContainMode
     ];
     
     for (test of toTest)

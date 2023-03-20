@@ -35,6 +35,7 @@ module.exports.testNegations = (chunk) => {
     });
 
     //Adjust for adjectives
+    if (numNegation == 0) return false;
     numNegation = Math.max(1, numNegation - numAdj + 1);
 
     return numNegation % 2 == 1;
@@ -60,7 +61,8 @@ const darkMode = new SimpleMap([
 	"dark",
 	"black",
 	"default",
-    "grey"
+    "grey",
+    "gray"
 ]);
 
 const justinRelLight = {
@@ -98,7 +100,7 @@ module.exports.testContainMode = (chunk) => {
     let mentionDark = false;
 
     // Loop through each word in the NP
-    for (var word in chunk)
+    for (var word of chunk.children)
     {
         //If it's a pronoun and refers to a subject, just use the mode type. End everything right there.
 		if (word.pos == "PRONOUN" && word.subject)
@@ -121,6 +123,11 @@ module.exports.testContainMode = (chunk) => {
         }
         else if (word.pos == "VERB")
         {
+            //If no subject, ignore it
+            if (!word.subject)
+            {
+                continue;
+            }
             //(Experimental) If the word is a verb, check to see if Justin's name is in its subject, and whether or not the verb is something like "justin hates." 
             //If it is, mentionsLight/mentionsDark
 

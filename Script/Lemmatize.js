@@ -9,9 +9,9 @@ lemmaArr.forEach(line => {
     var lemmas = line.split(" ");
     for (var i = lemmas.length - 1; i > 0; i--)
 	{
-		if (!dictionary.get(lemmas[i].toLowerCase()))
+		if (!dictionary.has(lemmas[i].trim().toLowerCase()))
 		{
-			dictionary.set(lemmas[i].toLowerCase(), lemmas[0].toLowerCase());
+			dictionary.set(lemmas[i].trim().toLowerCase(), lemmas[0].trim().toLowerCase());
 		}
 	}
 });
