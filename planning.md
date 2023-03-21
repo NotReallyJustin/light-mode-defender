@@ -299,7 +299,7 @@ Also side note: handle stuff like "Bob has a dog. I petted it" because the algor
 Also side note: handle "She's a great cat and her name is Becca" because Becca never gets discovered <br>
 Also side note: handle the clusterfuck that is step 8 in the manual because the more I look at it, the worse it gets.
 
-# 5) Sentiment Analysis all light mode noun phrases
+# 5) Pre-Process Functions (Before we begin Sentiment Analysis)
 ## Before we Begin: Lemmatize Helper Function
 AFINN-165 works on Lemmas. Lemmatize stuff. <br>
 https://tartarus.org/martin/PorterStemmer/def.txt <-- Normally I would say just follow this, but check some of the lemma algorithms because they don't sound like English <br>
@@ -391,7 +391,61 @@ const justinRelDark = {
 	"seal": new SimpleMap(["hate", "vomit", "dislke"])
 };
 ```
-# 6) Return score
+# 6) Sentiment Analysis
+The idea here is that you have all the main "POS Chunks." Most of them will have a subject connected to it. <br>
+Hence, if the POS chunks are referring to light mode or dark mode (test contain mode comes in here), sentiment analysis them. <br>
+We're using AFINN-165 for this one and having them return a score. <br>
+Positive scores are pro-light mode, negative scores are anti-light mode. <br> <br>
+
+So first things: traverse through all POS chunks.
+
+## If NOUN PHRASE
+```
+1. See if the NP mentions light mode or dark mode
+2. If it does, traverse through all the words in the NP
+3. If the words are an adjective or verb, check if their subject is a mode word. If they are, sentiment analysis them.
+4. Take into account negations.
+5. Apply light mode/dark mode calculation
+```
+
+## If VERB PHRASE
+See is VP has light mode or dark mode as its subject and/or object. <br>
+<br>
+If light mode or dark mode is in the subject: <br>
+```
+1. If subject is light mode and object is dark mode, light attack dark. Reverse any AFINN.  (ie. light helped dark --> BAD, light attacked dark --> GOOD)
+2. If subject is dark mode and object is light mode, dark attack light. Keep any AFINN. (ie. dark helped light --> GOOD, dark attack light --> BAD)
+3. If subject is light, keep any AFINN. (ie. light helped bear --> GOOD, light attacked bear --> BAD)
+4. If subject is dark, reverse any AFINN. (ie. dark helped bear --> BAD, dark attacked bear --> GOOD)
+5. Adjust for negation
+```
+<br>
+ELSE IF light mode or dark mode is in the object: <br>
+```
+1. If subject is light mode, reverse AFINN.
+2. If subject is dark mode, keep AFINN.
+3. Adjust for negation
+```
+
+## If ADJECTIVE PHRASE
+```
+1. Take into account negations
+2. If light mode subject, keep any AFINN.
+3. If dark mode subject, reverse any AFINN.
+4. Loop through all ADJECTIVE words in the ADJECTIVE phrase and AFINN it
+```
+
+## If COMPARISON PHRASE
+```
+1. If light is in subject, AFINN normally.
+2. Else if dark is in subject, reverse AFINN.
+3. Else if light is in object, reverse AFINN.
+4. Else if dark is in object, reverse AFINN.
+5. Take into account negations
+6. Find the actual COMPARSION word inside the POS chunk and AFINN it.
+```
+<br> <br>
+After, return all aggregated Sentiment Analysis scores
 
 # 7) ???
 ## Write tests for everything
