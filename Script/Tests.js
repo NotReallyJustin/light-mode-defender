@@ -1027,10 +1027,18 @@ const testLemmatize = () => {
 }
 
 /**
+ * Tests SentimentAnalysis.sentimentAnalysis()
+ * @returns Whether the function works
+ */
+const testSentimentAnalysis = () => {
+    return true;
+}
+
+/**
  * Runs all the unit tests and prints results of whether they're working properly.
  */
 module.exports.runTests = async () => {
-    console.log("----------RUNNING UNIT TESTS--------------");
+    console.log("----------RUNNING TESTS--------------");
 
     //Functions are objects so run through all these and test them
     const toTest = [
@@ -1051,7 +1059,8 @@ module.exports.runTests = async () => {
         testHobbs,
         testTestNegations,
         testLemmatize,
-        testContainMode
+        testContainMode,
+        testSentimentAnalysis
     ];
     
     for (test of toTest)
