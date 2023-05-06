@@ -406,6 +406,8 @@ So first things: traverse through all POS chunks.
 3. If the words are an adjective or verb, check if their subject is a mode word. If they are, sentiment analysis them.
 4. Take into account negations.
 5. Apply light mode/dark mode calculation
+
+TO DO: HANDLE NP.subject == NP on the chunk level
 ```
 
 ## If VERB PHRASE
