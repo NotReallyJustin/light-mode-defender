@@ -18,27 +18,33 @@ const afinn = require("../Data/afinn165.json");
  * The book that Justin did NOT rip apart and not eat --> Not is counted once here
  * Targets adj, verb, and adv
  * Things like since and because won't trigger CONJUNCTION because we already flagged it as SCONJ
- * @param {Relation} chunk A relation, preferably `chunk.isChunk == true`. Quite literally.
+ * @param {Relation} term A relation, preferably `term.isChunk == true` but also works with single words. Quite literally.
  * @returns {Boolean} A boolean representing whether or not something is a negation
  */
-module.exports.testNegations = (chunk) => {
-    let numAdj = chunk.countChildren("ADJECTIVE");
+module.exports.testNegations = (term) => {
+    if (term.isChunk)
+    {    
+        let numNegation = 0;
+        let numKeyPOS = term.countChildren("ADJECTIVE") + term.countChildren("VERB") + term.countChildren("COMPARISON");
 
-    //Loop to find numNegation
-    let numNegation = 0;
+        //Loop to find numNegation
+        term.children.forEach(child => {
+            if (negations[child.toString()])
+            {
+                numNegation++;
+            }
+        });
 
-    chunk.children.forEach(child => {
-        if (negations[child.toString()])
-        {
-            numNegation++;
-        }
-    });
+        //Adjust for adjectives
+        if (numNegation == 0) return false;
 
-    //Adjust for adjectives
-    if (numNegation == 0) return false;
-    numNegation = Math.max(1, numNegation - numAdj + 1);
-
-    return numNegation % 2 == 1;
+        numNegation = Math.max(1, numNegation - numKeyPOS + 1);
+        return numNegation % 2 == 1;
+    }
+    else
+    {
+        return negations[term.toString()]
+    }
 }
 
 // ------------------ These are pasted for "mode detection". Fix these later. -----------------

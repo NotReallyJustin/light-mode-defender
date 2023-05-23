@@ -34,7 +34,8 @@ module.exports.sentimentAnalysis = (root, bias=0) => {
 
                         if ((npChild.pos == "ADJECTIVE" || npChild.pos == "VERB") && npChild.subject)
                         {
-                            if (Detection.testContainMode(npChild.subject) != "none")
+                            //Add .parent since the ADJ/VERBs that we're seeing is embedded in the LM sentence itself
+                            if (Detection.testContainMode(npChild.subject.parent) != "none")
                             {
                                 //If they are, sentiment analysis them.
                                 var lemmatized = lemmatize(npChild.toString(), npChild.pos);
@@ -58,13 +59,12 @@ module.exports.sentimentAnalysis = (root, bias=0) => {
                 {
                     total -= sentimentScore;
                 }
-
             break;
 
             case "VERB":
                 //See is VP has light mode or dark mode as its subject and/or object.
-                var subjectMode = el.subject ? testContainMode(el.subject) : "none";
-			    var objectMode = el.object ? testContainMode(el.object) : "none";
+                var subjectMode = el.subject ? Detection.testContainMode(el.subject) : "none";
+			    var objectMode = el.object ? Detection.testContainMode(el.object) : "none";
 
                 //To track AFINN score to add later
                 var sentimentScore = 0;
@@ -127,7 +127,9 @@ module.exports.sentimentAnalysis = (root, bias=0) => {
                 var sentimentScore = 0;
                 var afinnStatus = NOTHING_AFINN;
 
-                var subjectMode = el.subject ? testContainMode(el.subject) : "none";
+                var subjectMode = el.subject ? Detection.testContainMode(el.subject) : "none";
+                // console.log(subjectMode)
+                // console.log(el.subject)
 
                 if (subjectMode == "light")
                 {
@@ -139,24 +141,36 @@ module.exports.sentimentAnalysis = (root, bias=0) => {
                 }
 
                 //Account for negations
-                if (Detection.testNegations(el)) afinnStatus = afinnStatus * -1;
-
-                //Loop through all words in the ADJECTIVE phrase and AFINN it
+                //If a conjunction exists, we'll kinda need to take into account every adjective individually
+                //If it doesn't, well it doesn't matter since the code takes that into account by sticking to one negation mode
                 if (subjectMode != "none")
                 {
+                    const IN_NEGATION_ZONE = -1;        // There's a more optimal way to write it but for readability we're gonna just use these vars
+                    const NOT_IN_NEGATION_ZONE = 1;
+
+                    var negZone = NOT_IN_NEGATION_ZONE; //Whether we're in a negation zone or not
                     el.children.forEach(adjChild => {
-                        if (adjChild.pos == "ADJECTIVE")
+                        if (Detection.testNegations(adjChild))
+                        {
+                            negZone = negZone == NOT_IN_NEGATION_ZONE ? IN_NEGATION_ZONE : NOT_IN_NEGATION_ZONE;
+                        }
+                        else if (adjChild.pos == "PUNCTUATION" || adjChild.pos == "CONJUNCTION")
+                        {
+                            negZone = NOT_IN_NEGATION_ZONE; //We reset for each different term
+                        }
+                        else if (adjChild.pos == "ADJECTIVE")
                         {
                             var lemmatized = lemmatize(adjChild.toString(), adjChild.pos);
                             if (afinn[lemmatized])
                             {
-                                sentimentScore += afinn[lemmatized];
+                                //console.log(afinn[lemmatized] * negZone);
+                                sentimentScore += afinn[lemmatized] * negZone;
                             }
                         }
-                    });
-
-                    total += sentimentScore * afinnStatus;
+                    })
                 }
+
+                total += sentimentScore * afinnStatus;
             break;
 
             case "COMPARISON":
@@ -164,8 +178,8 @@ module.exports.sentimentAnalysis = (root, bias=0) => {
                 var sentimentScore = 0;
                 var afinnStatus = NOTHING_AFINN;
 
-                var subjectMode = el.subject ? testContainMode(el.subject) : "none";
-                var objectMode = el.object ? testContainMode(el.object) : "none";
+                var subjectMode = el.subject ? Detection.testContainMode(el.subject) : "none";
+                var objectMode = el.object ? Detection.testContainMode(el.object) : "none";
 
                 /*
                 1. If light is in subject, AFINN normally.
@@ -195,7 +209,7 @@ module.exports.sentimentAnalysis = (root, bias=0) => {
 
                 if (subjectMode != "none" || objectMode != "none")
                 {
-                    //Find the actual COMPARSION word inside the POS chunk and AFINN it.
+                    //Find the actual COMPARSION word inside the POS chunk and find score for it.
                     el.children.forEach(compChild => {
                         if (compChild.pos == "COMPARISON")
                         {
@@ -212,6 +226,7 @@ module.exports.sentimentAnalysis = (root, bias=0) => {
             break;
         }
     });
-
+    
+    //console.log(total + bias)
     return total + bias;
 }

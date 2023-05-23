@@ -444,6 +444,7 @@ ELSE IF light mode or dark mode is in the object: <br>
 3. Else if light is in object, reverse AFINN.
 4. Else if dark is in object, reverse AFINN.
 5. Take into account negations
+    --> If you have negations AND conjunctions in a sentence, you're gonna want to parse them individually because English kinda does work that way sadge
 6. Find the actual COMPARSION word inside the POS chunk and AFINN it.
 ```
 <br> <br>

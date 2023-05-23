@@ -9,6 +9,7 @@ const PronounAnaphora = require("./PronounAnaphora");
 const NameGender = require("./NameGender");
 const Detection = require("./Detection");
 const Lemmatize = require("./Lemmatize");
+const { sentimentAnalysis } = require("./SentimentAnalysis");
  
 /**
  * Tests Helper.fixSpaces. There's only 1 but all the possible errors are thrown into this test case
@@ -1028,9 +1029,269 @@ const testLemmatize = () => {
 
 /**
  * Tests SentimentAnalysis.sentimentAnalysis()
+ * Not rly a unit test at this point bc it uses so many other stuff
  * @returns Whether the function works
  */
 const testSentimentAnalysis = () => {
+    try
+    {
+        const sent1 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["Discord", "PNOUN", 0, "NOUN"],
+                ["light", "ADJECTIVE", 1, "NOUN"],
+                ["mode", "NOUN", 2, "NOUN"]
+            ],
+            [
+                ["is", "IS", 0, "ADJECTIVE"],
+                ["terrible", "ADJECTIVE", 1, "ADJECTIVE"], // -3
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent1) != -3) throw "Basic SA. failed";
+        if (sentimentAnalysis(sent1, 2) != -1) throw "Positive bias # failed";
+        if (sentimentAnalysis(sent1, -1) != -4) throw "Negative bias # failed";
+
+        const sent2 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["Discord", "PNOUN", 0, "NOUN"],
+                ["dark", "ADJECTIVE", 1, "NOUN"],
+                ["mode", "NOUN", 2, "NOUN"]
+            ],
+            [
+                ["is", "IS", 0, "ADJECTIVE"],
+                ["terrible", "ADJECTIVE", 1, "ADJECTIVE"], // -3
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent2) != 3) throw "SA can't detect between light & dark mode";
+
+        const sent3 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["Discord", "PNOUN", 0, "NOUN"],
+                ["light", "ADJECTIVE", 1, "NOUN"],
+                ["mode", "NOUN", 2, "NOUN"]
+            ],
+            [
+                ["is", "IS", 0, "ADJECTIVE"],
+                ["terrible", "ADJECTIVE", 1, "ADJECTIVE"], // -3
+                [",", "PUNCTUATION", 3, "ADJECTIVE"],
+                ["bad", "ADJECTIVE", 4, "ADJECTIVE"],   // -3
+                [",", "PUNCTUATION", 5, "ADJECTIVE"],
+                ["and", "CONJUNCTION", 6, "ADJECTIVE"],
+                ["useless", "ADJECTIVE", 7, "ADJECTIVE"] // -2
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent3) != -8) throw "SA can't detect ADJ phrases with multiple items";
+
+        const sent4 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["Discord", "PNOUN", 0, "NOUN"],
+                ["light", "ADJECTIVE", 1, "NOUN"],
+                ["mode", "NOUN", 2, "NOUN"]
+            ],
+            [
+                ["is", "IS", 0, "ADJECTIVE"],
+                ["terrible", "ADJECTIVE", 1, "ADJECTIVE"], // -3
+                [",", "PUNCTUATION", 3, "ADJECTIVE"],
+                ["bad", "ADJECTIVE", 4, "ADJECTIVE"],   // -3
+                [",", "PUNCTUATION", 5, "ADJECTIVE"],
+                ["and", "CONJUNCTION", 6, "ADJECTIVE"],
+                ["not", "PART", 7, "ADJECTIVE"],        //Negate below
+                ["great", "ADJECTIVE", 8, "ADJECTIVE"] // 3
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent4) != -9) throw "SA can't detect negations properly";
+
+        const sent5 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["Discord", "PNOUN", 0, "NOUN"],
+                ["dark", "ADJECTIVE", 1, "NOUN"],
+                ["mode", "NOUN", 2, "NOUN"]
+            ],
+            [
+                ["is", "IS", 0, "ADJECTIVE"],
+                ["terrible", "ADJECTIVE", 1, "ADJECTIVE"], // -3
+                [",", "PUNCTUATION", 3, "ADJECTIVE"],
+                ["bad", "ADJECTIVE", 4, "ADJECTIVE"],   // -3
+                [",", "PUNCTUATION", 5, "ADJECTIVE"],
+                ["and", "CONJUNCTION", 6, "ADJECTIVE"],
+                ["not", "PART", 7, "ADJECTIVE"],        //Negate below
+                ["great", "ADJECTIVE", 8, "ADJECTIVE"] // 3
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent5) != 9) throw "SA negations don't mesh well with flipping Dark Mode theme";
+
+        const sent6 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["Discord", "PNOUN", 0, "NOUN"],
+                ["dark", "ADJECTIVE", 1, "NOUN"],
+                ["mode", "NOUN", 2, "NOUN"]
+            ],
+            [
+                ["is", "IS", 0, "ADJECTIVE"],
+                ["terrible", "ADJECTIVE", 1, "ADJECTIVE"], // -3
+                [",", "PUNCTUATION", 2, "ADJECTIVE"],
+                ["bad", "ADJECTIVE", 3, "ADJECTIVE"],   // -3
+                [",", "PUNCTUATION", 4, "ADJECTIVE"],
+                ["and", "CONJUNCTION", 5, "ADJECTIVE"],
+                ["not", "PART", 6, "ADJECTIVE"],
+                ["not", "PART", 7, "ADJECTIVE"],        //Double negation - does nothing
+                ["great", "ADJECTIVE", 8, "ADJECTIVE"] // 3
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent6) != 3) throw "SA can't handle double negations";
+
+        const sent7 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["Discord", "PNOUN", 0, "NOUN"],
+                ["dark", "ADJECTIVE", 1, "NOUN"],
+                ["mode", "NOUN", 2, "NOUN"]
+            ],
+            [
+                ["is", "IS", 0, "ADJECTIVE"],
+                ["terrible", "ADJECTIVE", 1, "ADJECTIVE"], // -3
+                [",", "PUNCTUATION", 3, "ADJECTIVE"],
+                ["not", "PART", 4, "ADJECTIVE"],    //Double negation - does nothing
+                ["not", "PART", 5, "ADJECTIVE"],
+                ["bad", "ADJECTIVE", 6, "ADJECTIVE"],   // -3
+                [",", "PUNCTUATION", 7, "ADJECTIVE"],
+                ["and", "CONJUNCTION", 8, "ADJECTIVE"],
+                ["not", "PART", 9, "ADJECTIVE"],        //Negate below
+                ["great", "ADJECTIVE", 10, "ADJECTIVE"] // 3
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent7) != 9) throw "SA can't handle double negations and negations at the same time";
+    
+        //From here on out, double negations + role flips are covered since they use the same code
+
+        const sent8 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["Light", "ADJECTIVE", 0, "NOUN"],
+                ["mode", "NOUN", 1, "NOUN"]
+            ],
+            [
+                ["is", "IS", 0, "COMPARISON"], 
+                ["better", "COMPARISON", 1, "COMPARISON"],  // 2
+                ["than", "SCONJ", 2, "COMPARISON"]
+            ],
+            [
+                ["dark", "ADJECTIVE", 0, "NOUN"],
+                ["mode", "NOUN", 1, "NOUN"]
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent8) != 2) throw "SA comparisons failing";
+
+        const sent9 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["Light", "ADJECTIVE", 0, "NOUN"],
+                ["mode", "NOUN", 1, "NOUN"]
+            ],
+            [
+                ["is", "IS", 0, "COMPARISON"],
+                ["not", "PART", 1, "COMPARISON"],        // Negation
+                ["better", "COMPARISON", 2, "COMPARISON"], // 2
+                ["than", "SCONJ", 3, "COMPARISON"]
+            ],
+            [
+                ["dark", "ADJECTIVE", 0, "NOUN"],
+                ["mode", "NOUN", 1, "NOUN"]
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent9) != -2) throw "SA comparisons can't handle negation";
+
+        const sent10 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["Light", "ADJECTIVE", 0, "NOUN"],
+                ["mode", "NOUN", 1, "NOUN"]
+            ],
+            [
+                ["viciously", "ADVERB", 0, "VERB"],  // -2 
+                ["attacked", "VERB", -1, "VERB"]     // -1
+            ],
+            [
+                ["dark", "ADJECTIVE", 0, "NOUN"],
+                ["mode", "NOUN", 1, "NOUN"]
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent10) != 3) throw "SA can't handle VPs";
+
+        const sent11 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["Light", "ADJECTIVE", 0, "NOUN"],
+                ["mode", "NOUN", 1, "NOUN"]
+            ],
+            [
+                ["was", "IS", 6, "VERB"],
+                ["attacked", "VERB", 7, "VERB"], // -1
+                ["by", "ADPOSITION", 8, "VERB"],
+            ],
+            [
+                ["dark", "ADJECTIVE", 0, "NOUN"],
+                ["mode", "NOUN", 1, "NOUN"]
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent11) != -1) throw "SA can't handle reflexive VPs";
+
+        const sent12 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["The", "DETERMINER", 0, "NOUN"],
+                ["evil", "ADJECTIVE", 1, "NOUN"], // -3     But remember it's calling dark mode evil so + 3
+                ["dark", "ADJECTIVE", 2, "NOUN"],
+                ["mode", "NOUN", 3, "NOUN"]
+            ],
+            [
+                ["died", "VERB", 0, "VERB"] // -3           But remember this is about dark mode so + 3
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent12) != 6) throw "SA can't handle ADJs inside the NP";
+    
+        const sent13 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["The", "DETERMINER", 0, "NOUN"], 
+                ["cat", "NOUN", 1, "NOUN"],
+                ["that", "SCONJ", 2, "NOUN"],
+                ["is", "IS", 3, "NOUN"],
+                ["tired", "ADJECTIVE", 4, "NOUN"]
+            ],
+            [
+                ["is", "IS", 0, "COMPARISON"], 
+                ["better", "COMPARISON", 1, "COMPARISON"],
+                ["than", "SCONJ", 2, "COMPARISON"]
+            ],
+            [
+                ["the", "DETERMINER", 0, "NOUN"], 
+                ["sleepy", "ADJECTIVE", 1, "NOUN"],
+                [",", "PUNCTUATION", 2, "NOUN"],
+                ["barking", "ADJECTIVE", 3, "NOUN"],
+                ["dog", "NOUN", 4, "NOUN"],
+                ["that", "SCONJ", 5, "NOUN"],
+                ["was", "IS", 6, "NOUN"],
+                ["attacked", "VERB", 7, "NOUN"],
+                ["by", "ADPOSITION", 8, "NOUN"],
+                ["a", "DETERMINER", 9, "NOUN"],
+                ["bus", "PRONOUN", 10, "NOUN"]
+            ]
+        ]);
+
+        if (sentimentAnalysis(sent13) != 0) throw "SA tried to do something when it's not talking about light mode/dark mode";
+    }
+    catch(err)
+    {
+        console.error("> testSentimentAnalysis failed: " + err);
+        console.error(err.stack);
+        return false;
+    }
+
     return true;
 }
 

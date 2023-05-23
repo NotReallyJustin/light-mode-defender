@@ -178,7 +178,7 @@ class Relation
     /**
      * Constructs a complete relation tree like the one shown https://i.imgur.com/1Sm0f2L.png from a POS Array that contains chunks and POS [word, POS]
      * @param {(String[] | String[][])} posArr The POS Array that contains chunks and POS [word, POS]
-     * @return {Relation} A fully fledged relation tree starting from Root
+     * @return {Relation} A fully fledged relation tree starting from Root - without relation extraction
      */
     static buildFromPOSArr(posArr)
     {
@@ -203,6 +203,18 @@ class Relation
             }
         }
 
+        return root;
+    }
+
+    /**
+     * Constructs a complete relation tree similar to buildFromPOSArr(posArr). However, we run relation extraction on it
+     * @param {(String[] | String[][])} posArr The POS Array that contains chunks and POS [word, POS]
+     * @return {Relation} A fully fledged relation tree starting from Root - with relation extraction
+     */
+    static extractFromPOSArr(posArr)
+    {
+        let root = Relation.buildFromPOSArr(posArr);
+        relationExtraction(root);
         return root;
     }
 }
@@ -404,7 +416,7 @@ const relationExtraction = (rootRelation) => {
                 case "ADJECTIVE":
                     //Adjectives that come before noun are in NP because *Light* in light mode is adj, but it's cruicial info to know the theme.
                     //So we only have adjectives after NP
-                    rel.subject = lookBehind(sentence.children, "NOUN", true, idx - 1);
+                    posChunk.subject = lookBehind(sentence.children, "NOUN", true, i - 1);
                 break;
 
                 case "ADVERB":
