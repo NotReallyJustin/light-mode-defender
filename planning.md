@@ -451,7 +451,9 @@ ELSE IF light mode or dark mode is in the object: <br>
 After, return all aggregated Sentiment Analysis scores
 
 # 7) ???
-## Write tests for everything
-I'll get to that probably in 2077
 
 # 8) Religious Victory
+## Current Stuff in Progress:
+Light Mode defender is awefully bad at detecting Gen-Z speech. <br />
+Light Mode defender cannot understand sarcasm (I don't think there's any way to fix this unfortunately without looking like the bot is anti-light mode) <br />
+Add emoji support
