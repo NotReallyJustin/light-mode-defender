@@ -1284,6 +1284,23 @@ const testSentimentAnalysis = () => {
         ]);
 
         if (sentimentAnalysis(sent13) != 0) throw "SA tried to do something when it's not talking about light mode/dark mode";
+
+        const sent14 = RelationExtraction.Relation.extractFromPOSArr([
+            [
+                ["I", "PRONOUN", 0, "NOUN"]
+            ],
+            [
+                ["hate", "VERB", 0, "VERB"]
+            ],
+            [
+                ["light", "ADJECTIVE", 0, "NOUN"],
+                ["mode", "NOUN", 1, "NOUN"]
+            ]
+        ]);
+
+        PronounAnaphora.hobbs(sent14);
+
+        if (sentimentAnalysis(sent14) != -3) throw "SA doesn't calculate VP linking to two NPs correctly";
     }
     catch(err)
     {

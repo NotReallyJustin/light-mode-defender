@@ -5,11 +5,19 @@ const Helper = require("./Helper");
 
 // ⭐ Whenever script is initiated, read the training data file
 
+let posData;
+
 /**
  * Reads POSData.txt and jots down the data.
  * @return the transmission and emission probabilities in an array. See below for that they do
  */
 const readPOSData = () => new Promise(function (resolve, reject) {
+
+	//If we already processed POSData, there's no need to do it again
+	if (posData != null)
+	{
+		resolve(posData);
+	}
 
 	/**
 	 * This takes into account the probability of a word being a certain POS
@@ -47,11 +55,12 @@ const readPOSData = () => new Promise(function (resolve, reject) {
 	});
 
 	leScan.on("close", () => {
-		//POSRead = true;
+		posData = [probWordPOS, emissionPOS]
 		leScan.removeAllListeners();
-		resolve([probWordPOS, emissionPOS]);
+		resolve(posData);
 	})
 });
+
 module.exports.readPOSData = readPOSData;
 
 // ⭐ Calculate the probability
@@ -155,10 +164,10 @@ module.exports.calcPOS = (probWordPOS, emissionPOS, sentence, showProbability=fa
  * Uses POSData.txt to calculate POS instead.
  * When you require this, make sure to use `const { calculate } = await require("./POS");`
  */
-module.exports.calculate = (async () => {
+module.exports.calculate = async () => {
 	const [probWordPOS, emissionPOS] = await this.readPOSData();
 	return this.calcPOS.bind(null, probWordPOS, emissionPOS);
-})();
+};
 
 // ⭐ Chunk the items
 

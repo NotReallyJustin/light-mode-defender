@@ -181,8 +181,17 @@ const hobbs = (root) => {
                 if (matchQueue.length == 0)
                 {
                     var idxCurrSentence = currSentence.parent.children.indexOf(currSentence);
-                    currSentence = idxCurrSentence > 0 ? currSentence.parent.children[idxCurrSentence - 1] : undefined; //STOP CONDITION HERE BOIS 
-                    matchQueue.push(currSentence);
+
+                    if (idxCurrSentence > 0)
+                    {
+                        currSentence = currSentence.parent.children[idxCurrSentence - 1];
+                        matchQueue.push(currSentence);
+                    }
+                    else
+                    {
+                        currSentence = undefined; //STOP CONDITION HERE BOIS 
+                        break;
+                    }                    
 
                     //if step 8 actually is useful in the manual, if currSentence == 0, then the next iteration of currSentence should be to the right
                 }
@@ -192,7 +201,7 @@ const hobbs = (root) => {
                 if (/\bNOUN\b|\bPNOUN\b/gmi.test(currentWord.pos) && proposeAntecedent(pronounRef, currentWord))
                 {
                     //if it's a noun, first thing we do is propose it as antecedent
-                    //If it matches, good job! Now exit this hobbs algorithm because it ends.
+                    //If it matches, good job! Now exit this hobbs algorithmbecause  it ends.
 
                     matchQueue.length = 0; //Clears the match queue
                     pronounRef.subject = currentWord;

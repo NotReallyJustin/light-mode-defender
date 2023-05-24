@@ -1,10 +1,11 @@
 const fs = require('fs');
+const path = require('path');
 
 //Intializes the dictionary
 //This feels really computationally expensive
 dictionary = new Map(); //Map<Word, Lemma>
 
-var lemmaArr = fs.readFileSync("../Data/lemmaData.txt").toString().split("\n");
+var lemmaArr = fs.readFileSync(path.resolve(__dirname, "../Data/lemmaData.txt")).toString().split("\n");
 lemmaArr.forEach(line => {
     var lemmas = line.split(" ");
     for (var i = lemmas.length - 1; i > 0; i--)

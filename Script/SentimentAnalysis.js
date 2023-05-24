@@ -75,7 +75,7 @@ module.exports.sentimentAnalysis = (root, bias=0) => {
                     //Light attack dark. Reverse AFINN.
                     if (subjectMode == "light" && objectMode == "dark")
                     {
-                        afinnStatus = REVERSE_AFINN;
+                        afinnStatus = REVERSE_AFINN;                           //Light attack Dark. Reverse AFINN.
                     }
                     else if (subjectMode == "dark" && objectMode == "light") //Dark attack light. Keep AFINN.
                     {
@@ -92,13 +92,13 @@ module.exports.sentimentAnalysis = (root, bias=0) => {
                 }
                 else if (objectMode != "none")
                 {
-                    if (objectMode == "light")  //Reverse AFINN
+                    if (objectMode == "light")  //Keep AFINN
                     {
-                        afinnStatus = REVERSE_AFINN;
+                        afinnStatus = KEEP_AFINN;        //I hate light mode
                     }
-                    else if (objectMode == "dark")  //Keep AFINN
+                    else if (objectMode == "dark")  //Reverse AFINN
                     {
-                        afinnStatus = KEEP_AFINN;
+                        afinnStatus = REVERSE_AFINN;           //I hate dark mode
                     }
                 }
 
