@@ -5,7 +5,7 @@ A NLP Model I'm building from scratch to conduct sentiment analysis on a text an
 This is built on Node.js. Some data came from the Penn Treebank and me manually inserting them from Reddit articles.
 
 ## Technical Details
-Wowza this took almost the entirety of freshman year to finish <br />
+Wowza this took almost the entirety of freshman year to finish <br /><br />
 To run **Light Mode Defender**, `git clone` the repo and run `./index,js`. Although I really only intended Light Mode Defender to be a npm package/module I could import to say, srs bot. <br />
 To see the logic behind things/planning, go to `./planning.md`.
 
