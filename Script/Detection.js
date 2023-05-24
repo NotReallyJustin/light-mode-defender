@@ -111,7 +111,7 @@ module.exports.testContainMode = (chunk) => {
         //If it's a pronoun and refers to a subject, just use the mode type. End everything right there.
 		if ((word.pos == "PRONOUN" || word.pos == "NOUN") && word.subject)
 		{
-			let stacko = testContainMode(word.subject);
+			let stacko = this.testContainMode(word.subject);
 			if (stacko != "none") overriddenLoop = stacko;
 			break;
 		}
