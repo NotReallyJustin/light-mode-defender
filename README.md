@@ -1,11 +1,12 @@
 # Light Mode Defender (The boring, technical TLDR version)
-<a href='https://discord.com/blog/light-theme-redeemed'>This is a story of Light Theme's redemption.</a> So sit back, grab some popcorn 🍿, and let's unleash Divine Smite on some heathens. <br /><br />
+<a href='https://discord.com/blog/light-theme-redeemed'>This is a story of Light Theme's redemption.</a> So sit back, grab some popcorn 🍿, and let's unleash Divine Smite on some heathens. <br />
 
+<img src="https://i.imgur.com/YNtKDEy.png" /><br />
 A NLP Model I'm building from scratch to conduct sentiment analysis on a text and determine its feelings towards light mode. <br />
 This is built on Node.js. Some data came from the Penn Treebank and me manually inserting them from Reddit articles.
 
 ## Technical Details
-Wowza this took almost the entirety of freshman year to finish <br /><br />
+Wowza this took almost the entirety of freshman year to make and it's still a WIP <br /><br />
 To run **Light Mode Defender**, `git clone` the repo and run `./index,js`. Although I really only intended Light Mode Defender to be a npm package/module I could import to say, srs bot. <br /><br />
 To see the logic behind things/planning, go to `./planning.md`.
 
