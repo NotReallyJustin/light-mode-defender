@@ -43,7 +43,34 @@ To see the logic behind things/planning, go to `./planning.md`.
   As the dark mode army attempts to flee the crime scene with their brainwashed hostage, a <a href='https://www.youtube.com/watch?v=oTHpCYFz5qE'>young brave soul lead a desperate mission</a> to find what's left of the light mode union... <br /> <br />
   <img src="https://i.imgur.com/n5t5S0s.png" /> <br />
   <img src="https://i.imgur.com/jDT0R7s.png" />
+  <br /> 
+  <br />
+  <b>Episode IV</b> <br />
+  <b>A New Hope</b> <br />
+  It's a period of total war. Light Mode rebels in Discord HQ, under the cover of a <a href="https://www.reddit.com/r/discordapp/comments/bf6193/about_light_theme/?utm_source=share&utm_medium=web2x">false flag operation</a>, have won their first victory against the evil AXIS OF DARKNESS. <br />
+  <br />
+  During the battle, rebel spies managed to steal secret plans to the Empire's ultimate weapon, the DEATH STAR, a light powerful enough to flashbang and stun the entire virtual realm. <br />
+  <br />
+  Despite being pursued by the AXIS OF DARKNESS' sinister agents, Kontebulon and the rebels races to summon a <a href="https://twitter.com/discord/status/1171167852889436160">brighter, better, bolder Light Mode</a> that can save their people and restore freedom in the galaxy... <br /><br />
+  <img src="https://i.imgur.com/71soUDF.png" />
+  <br /> 
+  <br />
+  <b>Episode V</b> <br />
+  <b>The Axis Strikes Back</b> <br />
+  It's a dark (pun intended) time for the rebellion. Although the Death Star has been unleashed, the Light Mode Patrol have defeated the believers at their <a href="https://i.imgur.com/v2kTabd.png">own game</a> and <a href="https://i.imgur.com/7cAOMGU.png">pursued them across the galaxy</a>.<br />
+  <br />
+  Evading the dreaded <a href="https://www.youtube.com/watch?v=zFOjkmfHmsc">ban hammer</a>, a group of freedom fighters has established a new secret base on the remote outskirts of Reddit. <br />
+  <br />
+  The vitamin-D deficient heathens, obsessed with eradicating every trace the light, has dispatched millions of npcs into the far reaches of the internet...<br />
+  <br />
+  <img src="https://i.imgur.com/nqnmS3Q.png" /> 
+  <br />
+  <br />
+  <b>Episode VI</b> <br />
+  <b>Return of the Defender</b> <br />
+  Justin has <a href="https://www.youtube.com/watch?v=K4TE8CZ5rXs">returned to his home planet of Earth</a> in an attempt to rescue the Discord server from the clutches of Discord HQ's new vile creation: amoled. <br />
+  <br />
+  Little does the Dark Mode npcs know that the believers have secretly (ok kind of secretly) begun construction on a new bot army even more powerful than the first dreaded Srs Bot.<br />
+  <br />
+  When completed, LIGHT MODE DEFENDER will spell certain doom for the AXIS OF DARKNESS struggling to defile the powers of the light ...
 </p>
-
-## Note to Self On How to Start
-https://github.com/n-riesco/ijavascript
