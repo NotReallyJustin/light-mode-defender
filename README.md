@@ -49,7 +49,7 @@ To see the logic behind things/planning, go to `./planning.md`.
   <b>A New Hope</b> <br />
   It's a period of total war. Light Mode rebels in Discord HQ, under the cover of a <a href="https://www.reddit.com/r/discordapp/comments/bf6193/about_light_theme/?utm_source=share&utm_medium=web2x">false flag operation</a>, have won their first victory against the evil AXIS OF DARKNESS. <br />
   <br />
-  During the battle, rebel spies managed to steal secret plans to the Empire's ultimate weapon, the DEATH STAR, a light powerful enough to flashbang and stun the entire virtual realm. <br />
+  During the battle, rebel spies managed to repurpose secret plans to the Empire's ultimate weapon, the DEATH STAR, a light powerful enough to flashbang and stun the entire virtual realm. <br />
   <br />
   Despite being pursued by the AXIS OF DARKNESS' sinister agents, Kontebulon and the rebels races to summon a <a href="https://twitter.com/discord/status/1171167852889436160">brighter, better, bolder Light Mode</a> that can save their people and restore freedom in the galaxy... <br /><br />
   <img src="https://i.imgur.com/71soUDF.png" />
