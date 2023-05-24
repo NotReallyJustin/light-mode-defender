@@ -1,4 +1,4 @@
-# Light Mode Defender (The boring, technical TLDR version)
+## Light Mode Defender (The boring, technical TLDR version)
 <a href='https://discord.com/blog/light-theme-redeemed'>This is a story of Light Theme's redemption.</a> So sit back, grab some popcorn 🍿, and let's unleash Divine Smite on some heathens. <br />
 
 <img src="https://i.imgur.com/YNtKDEy.png" /><br />
